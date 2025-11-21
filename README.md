@@ -42,6 +42,8 @@ pip install -e .
 
 ## Quick Start
 
+### Basic Example
+
 ```python
 import numpy as np
 from fn_dbscan import FN_DBSCAN
@@ -50,27 +52,65 @@ from fn_dbscan import FN_DBSCAN
 X = np.array([[1, 2], [2, 2], [2, 3], [8, 7], [8, 8], [25, 80]])
 
 # Create and fit the model
-model = FN_DBSCAN(eps=3, min_cardinality=2, fuzzy_function='linear')
+model = FN_DBSCAN(
+    eps=0.3,                    # Neighborhood radius (for normalized data: 0-1)
+    min_cardinality=2.0,        # Minimum fuzzy cardinality (like MinPts)
+    fuzzy_function='exponential', # Membership function type
+    k=5,                        # Shape parameter
+    epsilon1=0.0,               # Membership threshold (0 = no filtering)
+    normalize=True              # Normalize data (recommended)
+)
 labels = model.fit_predict(X)
 
 print(f"Cluster labels: {labels}")
 print(f"Number of clusters: {model.n_clusters_}")
 ```
 
+### With scikit-learn datasets
+
+```python
+from sklearn.datasets import make_moons
+from fn_dbscan import FN_DBSCAN
+
+# Create non-convex dataset
+X, _ = make_moons(n_samples=200, noise=0.05, random_state=42)
+
+# Cluster with exponential membership function (recommended in paper)
+model = FN_DBSCAN(
+    eps=0.2,
+    min_cardinality=5.0,
+    fuzzy_function='exponential',
+    k=2,  # Lower k for gradual membership decay
+    normalize=True
+)
+labels = model.fit_predict(X)
+
+print(f"Found {model.n_clusters_} clusters")
+```
+
 ## Parameters
 
 ### FN_DBSCAN
 
-- **eps** (float, default=0.5): Maximum distance for neighborhood. Points within this distance are considered neighbors.
+- **eps** (float, default=0.5): Maximum distance for neighborhood (ε in the paper). For normalized data, this should be in [0, 1]. Points within this distance are considered potential neighbors.
 
-- **min_cardinality** (float, default=5.0): Minimum fuzzy cardinality for a point to be classified as a core point. This is the fuzzy equivalent of DBSCAN's `min_samples`.
+- **min_cardinality** (float, default=5.0): Minimum fuzzy cardinality for a point to be classified as a core point (ε₂ in the paper). This is the fuzzy equivalent of DBSCAN's `min_samples`.
 
 - **fuzzy_function** ({'linear', 'exponential', 'trapezoidal'}, default='linear'): The fuzzy membership function to use:
-  - `'linear'`: μ(d) = max(0, 1 - d/ε)
-  - `'exponential'`: μ(d) = exp(-d/ε)
+  - `'linear'`: μ(d) = max(0, 1 - k·d/d_max) where k = d_max/ε
+  - `'exponential'`: μ(d) = exp(-(k·d/d_max)²) where k is user-defined
   - `'trapezoidal'`: μ(d) = 1 if d ≤ ε/2, else 2(1-d/ε)
 
 - **metric** (str or callable, default='euclidean'): Distance metric to use. Can be any metric supported by sklearn.metrics.pairwise.
+
+- **k** (float or None, default=None): Parameter that controls the shape of the fuzzy membership function. If None, it's automatically calculated:
+  - For linear: k = d_max / eps
+  - For exponential: k = 20 (recommended by the paper)
+  Higher k values make the membership function steeper. Recommended values: 1-5 for gradual decay, 15-20 for steep decay.
+
+- **epsilon1** (float, default=0.0): Minimum membership threshold (ε₁ or α-cut level in the paper). Points with membership degree < epsilon1 are not considered neighbors. Should be in [0, 1]. Use 0.0 to include all points within eps radius.
+
+- **normalize** (bool, default=True): Whether to normalize the data so that maximum distance ≤ 1. This is recommended in the paper to make the eps parameter scale-independent.
 
 ## Attributes
 
@@ -84,17 +124,24 @@ After fitting, the following attributes are available:
 
 ## Fuzzy Membership Functions
 
+Based on the paper by Nasibov & Ulutagay (2009), FN-DBSCAN supports three fuzzy membership functions:
+
 ### Linear
 ```python
-μ(d) = max(0, 1 - d/ε)
+μ(d) = max(0, 1 - k·d/d_max)
 ```
-Simple linear decay from 1.0 at distance 0 to 0.0 at distance ε.
+where k = d_max / ε (auto-calculated) or user-defined.
+
+Simple linear decay. Higher k values create steeper decay.
+- **Recommended k**: Auto (d_max/ε) or 1-5 for gradual, 15-20 for steep
 
 ### Exponential
 ```python
-μ(d) = exp(-d/ε)
+μ(d) = exp(-(k·d/d_max)²)
 ```
 Smooth exponential decay. Emphasizes closer neighbors more strongly.
+- **Recommended k**: 20 (best results from paper), or 1-10 for more gradual decay
+- **Best for**: Non-convex clusters, varying densities
 
 ### Trapezoidal
 ```python
@@ -104,7 +151,8 @@ Smooth exponential decay. Emphasizes closer neighbors more strongly.
     0.0,           if d > ε
 }
 ```
-Plateau region with full membership for very close neighbors.
+Plateau region with full membership for very close neighbors, then linear decay.
+- **Best for**: Clear dense cores with defined boundaries
 
 ## Examples
 

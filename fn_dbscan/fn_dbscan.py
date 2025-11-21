@@ -32,24 +32,39 @@ class FN_DBSCAN(BaseEstimator, ClusterMixin):
     ----------
     eps : float, default=0.5
         The maximum distance between two samples for one to be considered
-        as in the neighborhood of the other. This is the most important
-        DBSCAN parameter to choose appropriately for your dataset.
+        as in the neighborhood of the other. For normalized data (normalize=True),
+        this should be in [0, 1]. This corresponds to ε in the paper.
 
     min_cardinality : float, default=5.0
         The minimum fuzzy cardinality required for a point to be classified
-        as a core point. This replaces the min_samples parameter in standard
-        DBSCAN with a fuzzy equivalent.
+        as a core point. This corresponds to ε2 (epsilon2) in the paper.
 
     fuzzy_function : {'linear', 'exponential', 'trapezoidal'}, default='linear'
         The fuzzy membership function to use for calculating neighborhood
         cardinality:
-        - 'linear': μ(d) = max(0, 1 - d/ε)
-        - 'exponential': μ(d) = exp(-d/ε)
+        - 'linear': μ(d) = max(0, 1 - k·d/d_max) where k = d_max/ε
+        - 'exponential': μ(d) = exp(-(k·d/d_max)²) where k is user-defined
         - 'trapezoidal': μ(d) = 1 if d ≤ ε/2, else 2(1-d/ε)
 
     metric : str or callable, default='euclidean'
         The distance metric to use. Can be any metric from
         sklearn.metrics.pairwise or a custom callable.
+
+    k : float or None, default=None
+        The parameter that controls the shape of the fuzzy membership function.
+        If None, it will be automatically calculated based on eps:
+        - For linear: k = d_max / eps
+        - For exponential: k = 20 (recommended by the paper)
+        Higher k values make the membership function steeper.
+
+    epsilon1 : float, default=0.0
+        The minimum membership threshold (α-cut level, ε1 in the paper).
+        Points with membership degree < epsilon1 are not considered neighbors.
+        Should be in [0, 1]. Use 0.0 to include all points within eps radius.
+
+    normalize : bool, default=True
+        Whether to normalize the data so that maximum distance is ≤ 1.
+        This is recommended in the paper to make eps parameter scale-independent.
 
     Attributes
     ----------
@@ -92,12 +107,18 @@ class FN_DBSCAN(BaseEstimator, ClusterMixin):
         eps: float = 0.5,
         min_cardinality: float = 5.0,
         fuzzy_function: str = 'linear',
-        metric: str = 'euclidean'
+        metric: str = 'euclidean',
+        k: Optional[float] = None,
+        epsilon1: float = 0.0,
+        normalize: bool = True
     ):
         self.eps = eps
         self.min_cardinality = min_cardinality
         self.fuzzy_function = fuzzy_function
         self.metric = metric
+        self.k = k
+        self.epsilon1 = epsilon1
+        self.normalize = normalize
 
     def fit(self, X, y=None):
         """Perform FN-DBSCAN clustering from features.
@@ -123,7 +144,23 @@ class FN_DBSCAN(BaseEstimator, ClusterMixin):
 
         # Validate and convert input data
         X, n_samples, n_features = validate_data(X)
-        self._X = X
+
+        # Normalize data if requested (as per the paper, page 4)
+        if self.normalize:
+            X_normalized, self._d_max = self._normalize_data(X)
+            self._X = X_normalized
+        else:
+            self._X = X
+            # Calculate d_max for unnormalized data
+            from scipy.spatial.distance import pdist
+            distances = pdist(X, metric=self.metric)
+            self._d_max = np.max(distances) if len(distances) > 0 else 1.0
+
+        # Calculate k parameter if not provided
+        if self.k is None:
+            self._k = self._calculate_k()
+        else:
+            self._k = self.k
 
         # Initialize labels and visited flags
         labels = np.full(n_samples, UNASSIGNED, dtype=int)
@@ -237,6 +274,9 @@ class FN_DBSCAN(BaseEstimator, ClusterMixin):
     ) -> float:
         """Calculate fuzzy cardinality for a point.
 
+        As per Definition 9 in the paper (page 7):
+        card FN(x; ε1, ε2) = Σ_{y∈N(x;ε1)} N_x(y)
+
         Parameters
         ----------
         point_idx : int
@@ -259,8 +299,13 @@ class FN_DBSCAN(BaseEstimator, ClusterMixin):
         neighbor_points = self._X[neighbors]
         distances = np.linalg.norm(neighbor_points - point, axis=1)
 
-        # Calculate fuzzy memberships
-        memberships = membership_func(distances, self.eps)
+        # Calculate fuzzy memberships with k and d_max parameters
+        memberships = membership_func(distances, self.eps, self._k, self._d_max)
+
+        # Apply epsilon1 threshold (alpha-cut level)
+        # Only count neighbors with membership >= epsilon1
+        if self.epsilon1 > 0:
+            memberships = np.where(memberships >= self.epsilon1, memberships, 0.0)
 
         # Sum memberships to get fuzzy cardinality
         cardinality = np.sum(memberships)
@@ -329,11 +374,77 @@ class FN_DBSCAN(BaseEstimator, ClusterMixin):
                 # critical as we check visited flag)
                 seed_set.extend(q_neighbors)
 
+    def _normalize_data(self, X: np.ndarray) -> tuple:
+        """Normalize data as described in the paper (page 4).
+
+        Formula: x'_ik = (x_ik - x_min_k) / ((x_max_k - x_min_k) * sqrt(m))
+
+        This ensures that d_max ≤ 1, making eps ∈ [0, 1].
+
+        Parameters
+        ----------
+        X : ndarray
+            Input data.
+
+        Returns
+        -------
+        X_normalized : ndarray
+            Normalized data.
+        d_max : float
+            Maximum distance in normalized space (should be ≤ 1).
+        """
+        n_samples, n_features = X.shape
+
+        # Calculate min and max for each feature
+        X_min = np.min(X, axis=0)
+        X_max = np.max(X, axis=0)
+
+        # Avoid division by zero
+        denominator = (X_max - X_min) * np.sqrt(n_features)
+        denominator = np.where(denominator == 0, 1.0, denominator)
+
+        # Normalize
+        X_normalized = (X - X_min) / denominator
+
+        # Calculate d_max
+        from scipy.spatial.distance import pdist
+        distances = pdist(X_normalized, metric=self.metric)
+        d_max = np.max(distances) if len(distances) > 0 else 1.0
+
+        return X_normalized, d_max
+
+    def _calculate_k(self) -> float:
+        """Calculate k parameter based on fuzzy function and eps.
+
+        As described in the paper (pages 5-6):
+        - Linear: k = d_max / eps
+        - Exponential: k = 20 (recommended value from experiments)
+        - Trapezoidal: k = d_max / eps
+
+        Returns
+        -------
+        k : float
+            The calculated k parameter.
+        """
+        if self.fuzzy_function == 'linear':
+            # k = d_max / eps (from equation after formula 5)
+            return self._d_max / self.eps if self.eps > 0 else 1.0
+        elif self.fuzzy_function == 'exponential':
+            # From Table 1: best results with k=20
+            return 20.0
+        elif self.fuzzy_function == 'trapezoidal':
+            return self._d_max / self.eps if self.eps > 0 else 1.0
+        else:
+            return 1.0
+
     def __repr__(self):
         """Return string representation of the estimator."""
         return (
             f"FN_DBSCAN(eps={self.eps}, "
             f"min_cardinality={self.min_cardinality}, "
             f"fuzzy_function='{self.fuzzy_function}', "
+            f"k={self.k}, "
+            f"epsilon1={self.epsilon1}, "
+            f"normalize={self.normalize}, "
             f"metric='{self.metric}')"
         )

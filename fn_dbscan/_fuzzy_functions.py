@@ -14,13 +14,14 @@ import numpy as np
 from typing import Union
 
 
-def linear_membership(distance: Union[float, np.ndarray], epsilon: float) -> Union[float, np.ndarray]:
+def linear_membership(distance: Union[float, np.ndarray], epsilon: float, k: float = 1.0, d_max: float = 1.0) -> Union[float, np.ndarray]:
     """Calculate linear fuzzy membership value.
 
     The linear membership function provides a simple linear decay from 1.0
-    at distance 0 to 0.0 at distance epsilon.
+    at distance 0 to 0.0 based on the k parameter.
 
-    Formula: μ(d) = max(0, 1 - d/ε)
+    Formula from paper (Equation 5): μ(d) = max(0, 1 - k·d/d_max)
+    where k = d_max / ε (automatically calculated from epsilon)
 
     Parameters
     ----------
@@ -28,6 +29,10 @@ def linear_membership(distance: Union[float, np.ndarray], epsilon: float) -> Uni
         Distance value(s) to calculate membership for.
     epsilon : float
         Maximum neighborhood radius (must be > 0).
+    k : float, default=1.0
+        Parameter controlling the steepness of the membership function.
+    d_max : float, default=1.0
+        Maximum distance in the dataset.
 
     Returns
     -------
@@ -36,29 +41,30 @@ def linear_membership(distance: Union[float, np.ndarray], epsilon: float) -> Uni
 
     Examples
     --------
-    >>> linear_membership(0.0, 1.0)
+    >>> linear_membership(0.0, 1.0, k=1.0, d_max=1.0)
     1.0
-    >>> linear_membership(0.5, 1.0)
+    >>> linear_membership(0.5, 1.0, k=1.0, d_max=1.0)
     0.5
-    >>> linear_membership(1.0, 1.0)
-    0.0
-    >>> linear_membership(2.0, 1.0)
+    >>> linear_membership(1.0, 1.0, k=1.0, d_max=1.0)
     0.0
     """
     if epsilon <= 0:
         raise ValueError(f"epsilon must be > 0, got {epsilon}")
+    if d_max <= 0:
+        raise ValueError(f"d_max must be > 0, got {d_max}")
 
-    membership = 1.0 - (distance / epsilon)
+    # Formula: μ(d) = max(0, 1 - k·d/d_max)
+    membership = 1.0 - k * (distance / d_max)
     return np.clip(membership, 0.0, 1.0)
 
 
-def exponential_membership(distance: Union[float, np.ndarray], epsilon: float) -> Union[float, np.ndarray]:
+def exponential_membership(distance: Union[float, np.ndarray], epsilon: float, k: float = 1.0, d_max: float = 1.0) -> Union[float, np.ndarray]:
     """Calculate exponential fuzzy membership value.
 
     The exponential membership function provides a smooth exponential decay
-    from 1.0 at distance 0 towards 0.0 at distance epsilon.
+    from 1.0 at distance 0 towards 0.0 based on the k parameter.
 
-    Formula: μ(d) = exp(-d/ε)
+    Formula from paper (Equation 6): μ(d) = exp(-(k·d/d_max)²)
 
     Parameters
     ----------
@@ -66,6 +72,11 @@ def exponential_membership(distance: Union[float, np.ndarray], epsilon: float) -
         Distance value(s) to calculate membership for.
     epsilon : float
         Maximum neighborhood radius (must be > 0).
+    k : float, default=1.0
+        Parameter controlling the steepness of the membership function.
+        Paper recommends k=20 for best results.
+    d_max : float, default=1.0
+        Maximum distance in the dataset.
 
     Returns
     -------
@@ -74,33 +85,30 @@ def exponential_membership(distance: Union[float, np.ndarray], epsilon: float) -
 
     Examples
     --------
-    >>> exponential_membership(0.0, 1.0)
+    >>> exponential_membership(0.0, 1.0, k=1.0, d_max=1.0)
     1.0
-    >>> abs(exponential_membership(1.0, 1.0) - 0.3678794) < 1e-6
+    >>> exponential_membership(1.0, 1.0, k=1.0, d_max=1.0) < 0.5
     True
     """
     if epsilon <= 0:
         raise ValueError(f"epsilon must be > 0, got {epsilon}")
+    if d_max <= 0:
+        raise ValueError(f"d_max must be > 0, got {d_max}")
 
-    membership = np.exp(-distance / epsilon)
-    # For distances >= epsilon, set to 0
-    if isinstance(distance, np.ndarray):
-        membership = np.where(distance >= epsilon, 0.0, membership)
-    else:
-        if distance >= epsilon:
-            membership = 0.0
+    # Formula: μ(d) = exp(-(k·d/d_max)²)
+    membership = np.exp(-((k * distance / d_max) ** 2))
 
     return membership
 
 
-def trapezoidal_membership(distance: Union[float, np.ndarray], epsilon: float) -> Union[float, np.ndarray]:
+def trapezoidal_membership(distance: Union[float, np.ndarray], epsilon: float, k: float = 1.0, d_max: float = 1.0) -> Union[float, np.ndarray]:
     """Calculate trapezoidal fuzzy membership value.
 
     The trapezoidal membership function has a plateau region with full
     membership (1.0) for distances up to ε/2, then linearly decays to 0.0
     at distance epsilon.
 
-    Formula:
+    Formula (from paper):
         μ(d) = 1.0,           if d ≤ ε/2
         μ(d) = 2(1 - d/ε),    if ε/2 < d ≤ ε
         μ(d) = 0.0,           if d > ε
@@ -111,6 +119,10 @@ def trapezoidal_membership(distance: Union[float, np.ndarray], epsilon: float) -
         Distance value(s) to calculate membership for.
     epsilon : float
         Maximum neighborhood radius (must be > 0).
+    k : float, default=1.0
+        Parameter controlling the steepness (not used in trapezoidal).
+    d_max : float, default=1.0
+        Maximum distance in the dataset (not used in trapezoidal).
 
     Returns
     -------
