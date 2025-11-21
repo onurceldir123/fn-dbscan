@@ -33,31 +33,43 @@ def validate_eps(eps: float) -> None:
         raise ValueError(f"eps must be > 0, got {eps}")
 
 
-def validate_min_cardinality(min_cardinality: float) -> None:
-    """Validate minimum cardinality parameter.
+def validate_epsilon2(epsilon2: float) -> None:
+    """Validate epsilon2 (minimum fuzzy cardinality) parameter.
 
     Parameters
     ----------
-    min_cardinality : float
-        Minimum fuzzy cardinality for core points.
+    epsilon2 : float
+        Minimum fuzzy cardinality for core points (ε₂ in the paper).
 
     Raises
     ------
     ValueError
-        If min_cardinality is not positive.
+        If epsilon2 is not positive.
     TypeError
-        If min_cardinality is not a number.
+        If epsilon2 is not a number.
     """
-    if not isinstance(min_cardinality, (int, float, np.number)):
+    if not isinstance(epsilon2, (int, float, np.number)):
         raise TypeError(
-            f"min_cardinality must be a number, got {type(min_cardinality)}"
+            f"epsilon2 must be a number, got {type(epsilon2)}"
         )
 
-    if not np.isfinite(min_cardinality):
-        raise ValueError(f"min_cardinality must be finite, got {min_cardinality}")
+    if not np.isfinite(epsilon2):
+        raise ValueError(f"epsilon2 must be finite, got {epsilon2}")
 
-    if min_cardinality <= 0:
-        raise ValueError(f"min_cardinality must be > 0, got {min_cardinality}")
+    if epsilon2 <= 0:
+        raise ValueError(f"epsilon2 must be > 0, got {epsilon2}")
+
+
+# Backward compatibility alias
+def validate_min_cardinality(min_cardinality: float) -> None:
+    """Deprecated. Use validate_epsilon2 instead."""
+    import warnings
+    warnings.warn(
+        "validate_min_cardinality is deprecated. Use validate_epsilon2 instead.",
+        DeprecationWarning,
+        stacklevel=2
+    )
+    validate_epsilon2(min_cardinality)
 
 
 def validate_fuzzy_function(fuzzy_function: str) -> None:
@@ -170,16 +182,16 @@ def validate_data(X: np.ndarray) -> Tuple[np.ndarray, int, int]:
     return X, n_samples, n_features
 
 
-def validate_fit_params(eps: float, min_cardinality: float,
+def validate_fit_params(eps: float, epsilon2: float,
                         fuzzy_function: str, metric: str) -> None:
     """Validate all fit parameters.
 
     Parameters
     ----------
     eps : float
-        Epsilon (maximum neighborhood radius).
-    min_cardinality : float
-        Minimum fuzzy cardinality for core points.
+        Epsilon (maximum neighborhood radius, ε in the paper).
+    epsilon2 : float
+        Minimum fuzzy cardinality for core points (ε₂ in the paper).
     fuzzy_function : str
         Type of fuzzy membership function.
     metric : str
@@ -193,6 +205,6 @@ def validate_fit_params(eps: float, min_cardinality: float,
         If any parameter has wrong type.
     """
     validate_eps(eps)
-    validate_min_cardinality(min_cardinality)
+    validate_epsilon2(epsilon2)
     validate_fuzzy_function(fuzzy_function)
     validate_metric(metric)

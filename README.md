@@ -53,11 +53,11 @@ X = np.array([[1, 2], [2, 2], [2, 3], [8, 7], [8, 8], [25, 80]])
 
 # Create and fit the model
 model = FN_DBSCAN(
-    eps=0.3,                    # Neighborhood radius (for normalized data: 0-1)
-    min_cardinality=2.0,        # Minimum fuzzy cardinality (like MinPts)
+    eps=0.3,                    # ε: Neighborhood radius (for normalized data: 0-1)
+    epsilon2=2.0,               # ε₂: Minimum fuzzy cardinality (like MinPts)
     fuzzy_function='exponential', # Membership function type
-    k=5,                        # Shape parameter
-    epsilon1=0.0,               # Membership threshold (0 = no filtering)
+    k=5,                        # k: Shape parameter
+    epsilon1=0.0,               # ε₁: Membership threshold (0 = no filtering)
     normalize=True              # Normalize data (recommended)
 )
 labels = model.fit_predict(X)
@@ -77,10 +77,11 @@ X, _ = make_moons(n_samples=200, noise=0.05, random_state=42)
 
 # Cluster with exponential membership function (recommended in paper)
 model = FN_DBSCAN(
-    eps=0.2,
-    min_cardinality=5.0,
+    eps=0.2,            # ε: Neighborhood radius
+    epsilon2=5.0,       # ε₂: Minimum fuzzy cardinality
     fuzzy_function='exponential',
-    k=2,  # Lower k for gradual membership decay
+    k=2,                # k: Lower values for gradual membership decay
+    epsilon1=0.0,       # ε₁: No membership filtering
     normalize=True
 )
 labels = model.fit_predict(X)
@@ -94,7 +95,7 @@ print(f"Found {model.n_clusters_} clusters")
 
 - **eps** (float, default=0.5): Maximum distance for neighborhood (ε in the paper). For normalized data, this should be in [0, 1]. Points within this distance are considered potential neighbors.
 
-- **min_cardinality** (float, default=5.0): Minimum fuzzy cardinality for a point to be classified as a core point (ε₂ in the paper). This is the fuzzy equivalent of DBSCAN's `min_samples`.
+- **epsilon2** (float, default=5.0): Minimum fuzzy cardinality for a point to be classified as a core point (ε₂ in the paper). This is the fuzzy equivalent of DBSCAN's `min_samples`.
 
 - **fuzzy_function** ({'linear', 'exponential', 'trapezoidal'}, default='linear'): The fuzzy membership function to use:
   - `'linear'`: μ(d) = max(0, 1 - k·d/d_max) where k = d_max/ε
@@ -166,7 +167,7 @@ from fn_dbscan import FN_DBSCAN
 X, _ = make_blobs(n_samples=300, centers=3, random_state=42)
 
 # Fit FN-DBSCAN
-model = FN_DBSCAN(eps=0.7, min_cardinality=5)
+model = FN_DBSCAN(eps=0.7, epsilon2=5)
 labels = model.fit_predict(X)
 
 print(f"Found {model.n_clusters_} clusters")
@@ -188,7 +189,7 @@ dbscan = DBSCAN(eps=0.2, min_samples=5)
 labels_dbscan = dbscan.fit_predict(X)
 
 # FN-DBSCAN with linear membership
-fn_dbscan = FN_DBSCAN(eps=0.2, min_cardinality=5, fuzzy_function='linear')
+fn_dbscan = FN_DBSCAN(eps=0.2, epsilon2=5, fuzzy_function='linear')
 labels_fn = fn_dbscan.fit_predict(X)
 
 print(f"DBSCAN found {len(set(labels_dbscan)) - 1} clusters")
@@ -205,7 +206,7 @@ from fn_dbscan import FN_DBSCAN
 # Create pipeline
 pipeline = Pipeline([
     ('scaler', StandardScaler()),
-    ('clustering', FN_DBSCAN(eps=0.5, min_cardinality=5))
+    ('clustering', FN_DBSCAN(eps=0.5, epsilon2=5))
 ])
 
 # Fit pipeline
@@ -221,7 +222,7 @@ from fn_dbscan import FN_DBSCAN
 for fuzzy_func in ['linear', 'exponential', 'trapezoidal']:
     model = FN_DBSCAN(
         eps=0.5,
-        min_cardinality=5,
+        epsilon2=5,
         fuzzy_function=fuzzy_func
     )
     labels = model.fit_predict(X)
@@ -238,7 +239,7 @@ for fuzzy_func in ['linear', 'exponential', 'trapezoidal']:
    cardinality(p) = Σ μ(dist(p, q)) for all q in N_ε(p)
    ```
 
-2. **Core Point Definition**: A point p is core if `cardinality(p) >= min_cardinality`
+2. **Core Point Definition**: A point p is core if `cardinality(p) >= epsilon2` (ε₂)
 
 3. **Soft Boundaries**: Border points receive graded membership based on distance
 

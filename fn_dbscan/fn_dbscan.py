@@ -32,12 +32,13 @@ class FN_DBSCAN(BaseEstimator, ClusterMixin):
     ----------
     eps : float, default=0.5
         The maximum distance between two samples for one to be considered
-        as in the neighborhood of the other. For normalized data (normalize=True),
-        this should be in [0, 1]. This corresponds to ε in the paper.
+        as in the neighborhood of the other (ε in the paper).
+        For normalized data (normalize=True), this should be in [0, 1].
 
-    min_cardinality : float, default=5.0
+    epsilon2 : float, default=5.0
         The minimum fuzzy cardinality required for a point to be classified
-        as a core point. This corresponds to ε2 (epsilon2) in the paper.
+        as a core point (ε₂ in the paper). This is the fuzzy equivalent of
+        DBSCAN's min_samples parameter.
 
     fuzzy_function : {'linear', 'exponential', 'trapezoidal'}, default='linear'
         The fuzzy membership function to use for calculating neighborhood
@@ -65,6 +66,9 @@ class FN_DBSCAN(BaseEstimator, ClusterMixin):
     normalize : bool, default=True
         Whether to normalize the data so that maximum distance is ≤ 1.
         This is recommended in the paper to make eps parameter scale-independent.
+
+    min_cardinality : float, optional (deprecated)
+        Deprecated. Use epsilon2 instead. Kept for backward compatibility.
 
     Attributes
     ----------
@@ -105,20 +109,38 @@ class FN_DBSCAN(BaseEstimator, ClusterMixin):
     def __init__(
         self,
         eps: float = 0.5,
-        min_cardinality: float = 5.0,
+        epsilon2: Optional[float] = None,
         fuzzy_function: str = 'linear',
         metric: str = 'euclidean',
         k: Optional[float] = None,
         epsilon1: float = 0.0,
-        normalize: bool = True
+        normalize: bool = True,
+        min_cardinality: Optional[float] = None  # Deprecated, use epsilon2
     ):
+        import warnings
+
+        # Handle backward compatibility
+        if min_cardinality is not None and epsilon2 is None:
+            warnings.warn(
+                "Parameter 'min_cardinality' is deprecated and will be removed in a future version. "
+                "Use 'epsilon2' instead to match the paper's notation.",
+                DeprecationWarning,
+                stacklevel=2
+            )
+            epsilon2 = min_cardinality
+        elif epsilon2 is None:
+            epsilon2 = 5.0  # Default value
+
         self.eps = eps
-        self.min_cardinality = min_cardinality
+        self.epsilon2 = epsilon2
         self.fuzzy_function = fuzzy_function
         self.metric = metric
         self.k = k
         self.epsilon1 = epsilon1
         self.normalize = normalize
+
+        # Keep for backward compatibility in attributes
+        self.min_cardinality = self.epsilon2
 
     def fit(self, X, y=None):
         """Perform FN-DBSCAN clustering from features.
@@ -138,7 +160,7 @@ class FN_DBSCAN(BaseEstimator, ClusterMixin):
         """
         # Validate parameters
         validate_fit_params(
-            self.eps, self.min_cardinality,
+            self.eps, self.epsilon2,
             self.fuzzy_function, self.metric
         )
 
@@ -201,7 +223,7 @@ class FN_DBSCAN(BaseEstimator, ClusterMixin):
             )
 
             # Check if point is a core point
-            if cardinality < self.min_cardinality:
+            if cardinality < self.epsilon2:
                 # Mark as noise (may be changed later if reached by cluster)
                 labels[point_idx] = NOISE
                 continue
@@ -369,7 +391,7 @@ class FN_DBSCAN(BaseEstimator, ClusterMixin):
             )
 
             # If q is also a core point, add its neighbors to seed set
-            if q_cardinality >= self.min_cardinality:
+            if q_cardinality >= self.epsilon2:
                 # Add new neighbors to seed set (avoiding duplicates is not
                 # critical as we check visited flag)
                 seed_set.extend(q_neighbors)
@@ -441,7 +463,7 @@ class FN_DBSCAN(BaseEstimator, ClusterMixin):
         """Return string representation of the estimator."""
         return (
             f"FN_DBSCAN(eps={self.eps}, "
-            f"min_cardinality={self.min_cardinality}, "
+            f"epsilon2={self.epsilon2}, "
             f"fuzzy_function='{self.fuzzy_function}', "
             f"k={self.k}, "
             f"epsilon1={self.epsilon1}, "
