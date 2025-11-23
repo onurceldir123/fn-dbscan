@@ -58,7 +58,7 @@ def linear_membership(distance: Union[float, np.ndarray], epsilon: float, k: flo
     return np.clip(membership, 0.0, 1.0)
 
 
-def exponential_membership(distance: Union[float, np.ndarray], epsilon: float, k: float = 1.0, d_max: float = 1.0) -> Union[float, np.ndarray]:
+def exponential_membership(distance: Union[float, np.ndarray], epsilon: float, k: float = 20.0, d_max: float = 1.0) -> Union[float, np.ndarray]:
     """Calculate exponential fuzzy membership value.
 
     The exponential membership function provides a smooth exponential decay
@@ -72,7 +72,7 @@ def exponential_membership(distance: Union[float, np.ndarray], epsilon: float, k
         Distance value(s) to calculate membership for.
     epsilon : float
         Maximum neighborhood radius (must be > 0).
-    k : float, default=1.0
+    k : float, default=20.0
         Parameter controlling the steepness of the membership function.
         Paper recommends k=20 for best results.
     d_max : float, default=1.0

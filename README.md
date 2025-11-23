@@ -54,10 +54,10 @@ X = np.array([[1, 2], [2, 2], [2, 3], [8, 7], [8, 8], [25, 80]])
 # Create and fit the model
 model = FN_DBSCAN(
     eps=0.3,                    # ε: Neighborhood radius (for normalized data: 0-1)
+    epsilon1=0.0,               # ε₁: Membership threshold (0 = no filtering)
     epsilon2=2.0,               # ε₂: Minimum fuzzy cardinality (like MinPts)
     fuzzy_function='exponential', # Membership function type
     k=5,                        # k: Shape parameter
-    epsilon1=0.0,               # ε₁: Membership threshold (0 = no filtering)
     normalize=True              # Normalize data (recommended)
 )
 labels = model.fit_predict(X)
@@ -78,10 +78,10 @@ X, _ = make_moons(n_samples=200, noise=0.05, random_state=42)
 # Cluster with exponential membership function (recommended in paper)
 model = FN_DBSCAN(
     eps=0.2,            # ε: Neighborhood radius
+    epsilon1=0.0,       # ε₁: No membership filtering
     epsilon2=5.0,       # ε₂: Minimum fuzzy cardinality
     fuzzy_function='exponential',
     k=2,                # k: Lower values for gradual membership decay
-    epsilon1=0.0,       # ε₁: No membership filtering
     normalize=True
 )
 labels = model.fit_predict(X)
@@ -94,6 +94,8 @@ print(f"Found {model.n_clusters_} clusters")
 ### FN_DBSCAN
 
 - **eps** (float, default=0.5): Maximum distance for neighborhood (ε in the paper). For normalized data, this should be in [0, 1]. Points within this distance are considered potential neighbors.
+
+- **epsilon1** (float, default=0.0): Minimum membership threshold (ε₁ or α-cut level in the paper). Points with membership degree < epsilon1 are not considered neighbors. Should be in [0, 1]. Use 0.0 to include all points within eps radius.
 
 - **epsilon2** (float, default=5.0): Minimum fuzzy cardinality for a point to be classified as a core point (ε₂ in the paper). This is the fuzzy equivalent of DBSCAN's `min_samples`.
 
@@ -108,8 +110,6 @@ print(f"Found {model.n_clusters_} clusters")
   - For linear: k = d_max / eps
   - For exponential: k = 20 (recommended by the paper)
   Higher k values make the membership function steeper. Recommended values: 1-5 for gradual decay, 15-20 for steep decay.
-
-- **epsilon1** (float, default=0.0): Minimum membership threshold (ε₁ or α-cut level in the paper). Points with membership degree < epsilon1 are not considered neighbors. Should be in [0, 1]. Use 0.0 to include all points within eps radius.
 
 - **normalize** (bool, default=True): Whether to normalize the data so that maximum distance ≤ 1. This is recommended in the paper to make the eps parameter scale-independent.
 

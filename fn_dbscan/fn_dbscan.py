@@ -35,6 +35,11 @@ class FN_DBSCAN(BaseEstimator, ClusterMixin):
         as in the neighborhood of the other (ε in the paper).
         For normalized data (normalize=True), this should be in [0, 1].
 
+    epsilon1 : float, default=0.0
+        The minimum membership threshold (α-cut level, ε1 in the paper).
+        Points with membership degree < epsilon1 are not considered neighbors.
+        Should be in [0, 1]. Use 0.0 to include all points within eps radius.
+
     epsilon2 : float, default=5.0
         The minimum fuzzy cardinality required for a point to be classified
         as a core point (ε₂ in the paper). This is the fuzzy equivalent of
@@ -57,11 +62,6 @@ class FN_DBSCAN(BaseEstimator, ClusterMixin):
         - For linear: k = d_max / eps
         - For exponential: k = 20 (recommended by the paper)
         Higher k values make the membership function steeper.
-
-    epsilon1 : float, default=0.0
-        The minimum membership threshold (α-cut level, ε1 in the paper).
-        Points with membership degree < epsilon1 are not considered neighbors.
-        Should be in [0, 1]. Use 0.0 to include all points within eps radius.
 
     normalize : bool, default=True
         Whether to normalize the data so that maximum distance is ≤ 1.
@@ -109,11 +109,11 @@ class FN_DBSCAN(BaseEstimator, ClusterMixin):
     def __init__(
         self,
         eps: float = 0.5,
+        epsilon1: float = 0.0,
         epsilon2: Optional[float] = None,
         fuzzy_function: str = 'linear',
         metric: str = 'euclidean',
         k: Optional[float] = None,
-        epsilon1: float = 0.0,
         normalize: bool = True,
         min_cardinality: Optional[float] = None  # Deprecated, use epsilon2
     ):
@@ -132,11 +132,11 @@ class FN_DBSCAN(BaseEstimator, ClusterMixin):
             epsilon2 = 5.0  # Default value
 
         self.eps = eps
+        self.epsilon1 = epsilon1
         self.epsilon2 = epsilon2
         self.fuzzy_function = fuzzy_function
         self.metric = metric
         self.k = k
-        self.epsilon1 = epsilon1
         self.normalize = normalize
 
         # Keep for backward compatibility in attributes
@@ -194,7 +194,7 @@ class FN_DBSCAN(BaseEstimator, ClusterMixin):
             metric=self.metric,
             algorithm='auto'
         )
-        self._nn.fit(X)
+        self._nn.fit(self._X)
 
         # Get fuzzy membership function
         membership_func = get_fuzzy_membership_function(self.fuzzy_function)
@@ -463,10 +463,10 @@ class FN_DBSCAN(BaseEstimator, ClusterMixin):
         """Return string representation of the estimator."""
         return (
             f"FN_DBSCAN(eps={self.eps}, "
+            f"epsilon1={self.epsilon1}, "
             f"epsilon2={self.epsilon2}, "
             f"fuzzy_function='{self.fuzzy_function}', "
             f"k={self.k}, "
-            f"epsilon1={self.epsilon1}, "
             f"normalize={self.normalize}, "
             f"metric='{self.metric}')"
         )

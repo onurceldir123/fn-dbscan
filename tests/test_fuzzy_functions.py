@@ -60,10 +60,15 @@ class TestExponentialMembership:
 
     def test_at_epsilon(self):
         """Test membership at distance epsilon."""
+        # With default k=20, result should be very close to 0
         result = exponential_membership(1.0, 1.0)
+        assert result < 1e-10
+
+    def test_at_epsilon_k1(self):
+        """Test membership at distance epsilon with k=1."""
+        result = exponential_membership(1.0, 1.0, k=1.0)
         expected = np.exp(-1.0)
-        # At epsilon, we set to 0
-        assert result == 0.0
+        assert abs(result - expected) < 1e-10
 
     def test_beyond_epsilon(self):
         """Test membership beyond epsilon."""
@@ -71,9 +76,10 @@ class TestExponentialMembership:
 
     def test_monotonic_decay(self):
         """Test that membership decreases with distance."""
-        d1 = exponential_membership(0.0, 1.0)
-        d2 = exponential_membership(0.3, 1.0)
-        d3 = exponential_membership(0.6, 1.0)
+        # Use k=1.0 for gentler decay to ensure distinct values
+        d1 = exponential_membership(0.0, 1.0, k=1.0)
+        d2 = exponential_membership(0.3, 1.0, k=1.0)
+        d3 = exponential_membership(0.6, 1.0, k=1.0)
         assert d1 > d2 > d3
 
     def test_invalid_epsilon(self):
