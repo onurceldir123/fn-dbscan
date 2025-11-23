@@ -126,36 +126,46 @@ After fitting, the following attributes are available:
 
 ## Fuzzy Membership Functions
 
-Based on the paper by Nasibov & Ulutagay (2009), FN-DBSCAN supports three fuzzy membership functions:
+Based on the paper by **Nasibov & Ulutagay (2009)**, FN-DBSCAN supports three fuzzy membership functions:
 
-### Linear
-```python
-μ(d) = max(0, 1 - k·d/d_max)
-```
-where k = d_max / ε (auto-calculated) or user-defined.
+### 1. Linear
+A simple linear decay. Higher $k$ values create a steeper decay curve.
 
-Simple linear decay. Higher k values create steeper decay.
-- **Recommended k**: Auto (d_max/ε) or 1-5 for gradual, 15-20 for steep
+$$
+\mu(d) = \max\left(0, 1 - \frac{k \cdot d}{d_{max}}\right)
+$$
 
-### Exponential
-```python
-μ(d) = exp(-(k·d/d_max)²)
-```
-Smooth exponential decay. Emphasizes closer neighbors more strongly.
-- **Recommended k**: 20 (best results from paper), or 1-10 for more gradual decay
-- **Best for**: Non-convex clusters, varying densities
+Where $k = d_{max} / \epsilon$ (auto-calculated) or user-defined.
 
-### Trapezoidal
-```python
-μ(d) = {
-    1.0,           if d ≤ ε/2
-    2(1 - d/ε),    if ε/2 < d ≤ ε
-    0.0,           if d > ε
-}
-```
-Plateau region with full membership for very close neighbors, then linear decay.
-- **Best for**: Clear dense cores with defined boundaries
+* **Recommended $k$:** Auto ($d_{max}/\epsilon$) or `1-5` for gradual decay, `15-20` for steep decay.
 
+---
+
+### 2. Exponential
+Smooth exponential decay. Emphasizes closer neighbors more strongly than the linear function.
+
+$$
+\mu(d) = \exp\left(-\left(\frac{k \cdot d}{d_{max}}\right)^2\right)
+$$
+
+* **Recommended $k$:** `20` (best results cited in the paper), or `1-10` for more gradual decay.
+* **Best for:** Non-convex clusters and datasets with varying densities.
+
+---
+
+### 3. Trapezoidal
+Features a plateau region with full membership for very close neighbors, followed by a linear decay.
+
+$$
+\mu(d) =
+\begin{cases}
+1.0 & \text{if } d \le \epsilon/2 \\
+2\left(1 - \frac{d}{\epsilon}\right) & \text{if } \epsilon/2 < d \le \epsilon \\
+0.0 & \text{if } d > \epsilon
+\end{cases}
+$$
+
+* **Best for:** Data with clear dense cores and defined boundaries.
 ## Examples
 
 ### Basic Usage
