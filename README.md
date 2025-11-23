@@ -99,10 +99,11 @@ print(f"Found {model.n_clusters_} clusters")
 
 - **epsilon2** (float, default=5.0): Minimum fuzzy cardinality for a point to be classified as a core point (ε₂ in the paper). This is the fuzzy equivalent of DBSCAN's `min_samples`.
 
-- **fuzzy_function** ({'linear', 'exponential', 'trapezoidal'}, default='linear'): The fuzzy membership function to use:
-  - `'linear'`: μ(d) = max(0, 1 - k·d/d_max) where k = d_max/ε
-  - `'exponential'`: μ(d) = exp(-(k·d/d_max)²) where k is user-defined
-  - `'trapezoidal'`: μ(d) = 1 if d ≤ ε/2, else 2(1-d/ε)
+- **fuzzy_function** (`{'linear', 'exponential', 'trapezoidal'}`, default=`'linear'`):  
+  The fuzzy membership function to use:
+  - `'linear'`: $\mu(d) = \max(0, 1 - \frac{k \cdot d}{d_{max}})$ where $k = d_{max}/\epsilon$
+  - `'exponential'`: $\mu(d) = \exp\left(-\left(\frac{k \cdot d}{d_{max}}\right)^2\right)$ where $k$ is user-defined
+  - `'trapezoidal'`: $\mu(d) = 1$ if $d \le \epsilon/2$, else $2(1 - d/\epsilon)$
 
 - **metric** (str or callable, default='euclidean'): Distance metric to use. Can be any metric supported by sklearn.metrics.pairwise.
 
