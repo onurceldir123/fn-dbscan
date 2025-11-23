@@ -91,38 +91,45 @@ print(f"Found {model.n_clusters_} clusters")
 
 ## Parameters
 
-### FN_DBSCAN
+### `FN_DBSCAN`
 
-- **eps** (float, default=0.5): Maximum distance for neighborhood (ε in the paper). For normalized data, this should be in [0, 1]. Points within this distance are considered potential neighbors.
+The main class for Fuzzy Neighborhood DBSCAN clustering.
 
-- **epsilon1** (float, default=0.0): Minimum membership threshold (ε₁ or α-cut level in the paper). Points with membership degree < epsilon1 are not considered neighbors. Should be in [0, 1]. Use 0.0 to include all points within eps radius.
+- **`eps`** : *float, default=0.5* Maximum distance for neighborhood ($\epsilon$ in the paper). For normalized data, this should be in $[0, 1]$. Points within this distance are considered potential neighbors.
 
-- **epsilon2** (float, default=5.0): Minimum fuzzy cardinality for a point to be classified as a core point (ε₂ in the paper). This is the fuzzy equivalent of DBSCAN's `min_samples`.
+- **`epsilon1`** : *float, default=0.0* Minimum membership threshold ($\epsilon_1$ or $\alpha$-cut level in the paper). Points with membership degree $\mu(d) < \epsilon_1$ are not considered neighbors.  
+  *Range:* $[0, 1]$. Use `0.0` to include all points within the `eps` radius.
 
-- **fuzzy_function** (`{'linear', 'exponential', 'trapezoidal'}`, default=`'linear'`):  
-  The fuzzy membership function to use:
+- **`epsilon2`** : *float, default=5.0* Minimum fuzzy cardinality for a point to be classified as a core point ($\epsilon_2$ in the paper). This is the fuzzy equivalent of standard DBSCAN's `min_samples`.
+
+- **`fuzzy_function`** : *{'linear', 'exponential', 'trapezoidal'}, default='linear'* The fuzzy membership function $\mu(d)$ to use for calculating neighborhood density:
+  
   - `'linear'`: $\mu(d) = \max(0, 1 - \frac{k \cdot d}{d_{max}})$ where $k = d_{max}/\epsilon$
   - `'exponential'`: $\mu(d) = \exp\left(-\left(\frac{k \cdot d}{d_{max}}\right)^2\right)$ where $k$ is user-defined
   - `'trapezoidal'`: $\mu(d) = 1$ if $d \le \epsilon/2$, else $2(1 - d/\epsilon)$
 
-- **metric** (str or callable, default='euclidean'): Distance metric to use. Can be any metric supported by sklearn.metrics.pairwise.
+- **`metric`** : *str or callable, default='euclidean'* The distance metric to use. Can be any metric supported by `sklearn.metrics.pairwise`.
 
-- **k** (float or None, default=None): Parameter that controls the shape of the fuzzy membership function. If None, it's automatically calculated:
-  - For linear: k = d_max / eps
-  - For exponential: k = 20 (recommended by the paper)
-  Higher k values make the membership function steeper. Recommended values: 1-5 for gradual decay, 15-20 for steep decay.
+- **`k`** : *float or None, default=None* Parameter that controls the steepness/shape of the fuzzy membership function.
+  - **If `None` (Auto):**
+    - *Linear:* $k = d_{max} / \epsilon$
+    - *Exponential:* $k = 20$ (recommended by Nasibov & Ulutagay)
+  - **Manual:** Higher $k$ values create a steeper decay.
+    - *Recommended:* `1-5` for gradual decay, `15-20` for steep decay.
 
-- **normalize** (bool, default=True): Whether to normalize the data so that maximum distance ≤ 1. This is recommended in the paper to make the eps parameter scale-independent.
+- **`normalize`** : *bool, default=True* Whether to normalize the data so that the maximum distance is $\le 1$. This is strongly recommended to make the `eps` parameter scale-independent.
+
+---
 
 ## Attributes
 
-After fitting, the following attributes are available:
+After fitting the model, the following attributes are available:
 
-- **labels_** (ndarray of shape (n_samples,)): Cluster labels for each point. Noisy samples are given the label -1.
+- **`labels_`** : *ndarray of shape (n_samples,)* Cluster labels for each point in the dataset. Noisy samples are given the label `-1`.
 
-- **core_sample_indices_** (ndarray): Indices of core samples.
+- **`core_sample_indices_`** : *ndarray* Indices of the core samples (points that satisfy the $\epsilon_2$ density condition).
 
-- **n_clusters_** (int): Number of clusters found (excluding noise).
+- **`n_clusters_`** : *int* Estimated number of clusters found (excluding noise).
 
 ## Fuzzy Membership Functions
 
