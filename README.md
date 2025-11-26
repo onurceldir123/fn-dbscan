@@ -93,7 +93,9 @@ A point is a **core point** if its fuzzy cardinality ≥ `min_fuzzy_neighbors`.
 
 ## Citation
 
-If you use FN-DBSCAN in your research, please cite the original paper:
+If you use `fn-dbscan` in your research, please consider citing the original paper along with this software implementation to ensure reproducibility:
+
+**1. Original Algorithm:**
 
 ```bibtex
 @article{nasibov2009robustness,
@@ -107,6 +109,19 @@ If you use FN-DBSCAN in your research, please cite the original paper:
   publisher={Elsevier}
 }
 ```
+
+**2. Software Implementation:**
+
+```bibtex
+@software{celdir2025fndbscan,
+  author       = {Çeldir, Onur Mert},
+  title        = {FN-DBSCAN: Python Implementation of Fuzzy Neighborhood DBSCAN},
+  year         = 2025,
+  publisher    = {Zenodo},
+  version      = {v1.0.1},
+  doi          = {10.5281/zenodo.17726044},
+  url          = {[https://github.com/onurceldir123/fn-dbscan](https://github.com/onurceldir123/fn-dbscan)}
+}
 
 ## License
 
