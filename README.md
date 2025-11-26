@@ -2,7 +2,7 @@
 
 [![Python Version](https://img.shields.io/badge/python-3.8%2B-blue)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.17726045.svg)](https://doi.org/10.5281/zenodo.17726045)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.17726044.svg)](https://doi.org/10.5281/zenodo.17726044)
 
 Implementation of **Fuzzy Neighborhood DBSCAN (FN-DBSCAN)**, a density-based clustering algorithm that extends classic DBSCAN using fuzzy theory.
 
