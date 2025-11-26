@@ -36,19 +36,28 @@ labels = model.fit_predict(X)
 print(f"Found {model.n_clusters_} clusters")
 ```
 
+## Why FN-DBSCAN?
+
+While classic DBSCAN is powerful, it relies on a "crisp" boundary—a point is either a neighbor or it isn't. FN-DBSCAN improves upon this by introducing fuzzy set theory:
+
+* [cite_start]**Robustness to Density Variations:** It is more robust than DBSCAN when handling datasets with varying densities and shapes[cite: 19, 61].
+* **Soft Boundaries:** Instead of an all-or-nothing approach, it calculates a "fuzzy cardinality" (sum of membership degrees). [cite_start]This handles border points and noise more naturally [cite: 153-155].
+* [cite_start]**Scale Invariance:** The implementation includes the normalization technique proposed in the paper, making the `eps` parameter adaptable to the data scale [cite: 127-141].
+* [cite_start]**Best of Both Worlds:** Combines the speed of DBSCAN with the robustness of fuzzy clustering methods like NRFJP[cite: 18, 60].
+
 ## Parameters
 
 ### Core Parameters
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `eps` | float | 0.5 | Maximum neighborhood radius (0-1 for normalized data) |
-| `min_fuzzy_neighbors` | float | 5.0 | Minimum fuzzy cardinality to be a core point (like `min_samples` in DBSCAN) |
-| `min_membership` | float | 0.0 | Minimum membership threshold (0-1, use 0 to include all neighbors) |
-| `fuzzy_function` | str | 'linear' | Membership function: `'linear'`, `'exponential'`, or `'trapezoidal'` |
-| `normalize` | bool | True | Normalize data (strongly recommended) |
-| `k` | float | None | Membership function shape parameter (auto-calculated if None) |
-| `metric` | str | 'euclidean' | Distance metric (any scikit-learn metric) |
+| `eps` | float | 0.5 | Maximum neighborhood radius (0-1 for normalized data). |
+| `min_fuzzy_neighbors` | float | 5.0 | Minimum fuzzy cardinality to be a core point (analogous to `min_samples` in DBSCAN). |
+| `min_membership` | float | 0.0 | Minimum membership threshold ($\epsilon_1$). Points with membership below this are ignored. |
+| `fuzzy_function` | str | 'linear' | Membership function: `'linear'`, `'exponential'`, or `'trapezoidal'`. |
+| `normalize` | bool | True | Normalize data to make `eps` scale-independent (Strongly Recommended). |
+| `k` | float | None | **Steepness parameter.** Controls how fast membership drops. Higher $k$ = stricter neighborhood. Auto-calculated as $d_{max}/\epsilon$ if None. |
+| `metric` | str | 'euclidean' | Distance metric (any scikit-learn compatible metric). |
 
 ### Fuzzy Functions
 
@@ -67,7 +76,7 @@ After fitting, the model provides:
 
 ## Algorithm Overview
 
-FN-DBSCAN extends DBSCAN by computing fuzzy cardinality instead of crisp point counts:
+FN-DBSCAN extends DBSCAN by computing fuzzy cardinality instead of discrete point counts:
 
 ```
 Traditional DBSCAN:  cardinality = count(neighbors)
@@ -75,8 +84,6 @@ FN-DBSCAN:          cardinality = Σ membership(distance(p, q))
 ```
 
 A point is a **core point** if its fuzzy cardinality ≥ `min_fuzzy_neighbors`.
-
-**Complexity:** O(n log n) with KD-tree (low dimensions), O(n²) worst case.
 
 ## Citation
 
