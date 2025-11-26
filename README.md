@@ -46,9 +46,9 @@ print(f"Found {model.n_clusters_} clusters")
 
 While classic DBSCAN is powerful, it relies on a "crisp" boundary—a point is either a neighbor or it isn't. FN-DBSCAN improves upon this by introducing fuzzy set theory:
 
-* **Robustness to Density Variations:** It is more robust than DBSCAN when handling datasets with varying densities and shapes[cite: 19, 61].
-* **Soft Boundaries:** Instead of an all-or-nothing approach, it calculates a "fuzzy cardinality" (sum of membership degrees). [cite_start]This handles border points and noise more naturally [cite: 153-155].
-* **Scale Invariance:** The implementation includes the normalization technique proposed in the paper, making the `eps` parameter adaptable to the data scale [cite: 127-141].
+* **Robustness to Density Variations:** It is more robust than DBSCAN when handling datasets with varying densities and shapes.
+* **Soft Boundaries:** Instead of an all-or-nothing approach, it calculates a "fuzzy cardinality" (sum of membership degrees). This handles border points and noise more naturally.
+* **Scale Invariance:** The implementation includes the normalization technique proposed in the paper, making the `eps` parameter adaptable to the data scale.
 * **Best of Both Worlds:** Combines the speed of DBSCAN with the robustness of fuzzy clustering methods like NRFJP.
 
 ## Parameters
