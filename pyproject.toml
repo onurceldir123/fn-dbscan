@@ -46,6 +46,6 @@ viz = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/username/fn-dbscan"
-Documentation = "https://fn-dbscan.readthedocs.io"
-Repository = "https://github.com/username/fn-dbscan"
+Homepage = "https://github.com/onurceldir123/fn-dbscan"
+Repository = "https://github.com/onurceldir123/fn-dbscan"
+Issues = "https://github.com/onurceldir123/fn-dbscan/issues"
