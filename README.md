@@ -23,23 +23,22 @@ pip install -e .
 ## Quick Start
 
 ```python
-import numpy as np
+from sklearn.datasets import make_moons
 from fn_dbscan import FN_DBSCAN
 
-# Your data
-X = np.array([[1, 2], [2, 2], [2, 3], [8, 7], [8, 8], [25, 80]])
+X, _ = make_moons(n_samples=200, noise=0.05, random_state=42)
 
-# Cluster with FN-DBSCAN
 model = FN_DBSCAN(
-    eps=0.3,
-    min_fuzzy_neighbors=2.0,
-    fuzzy_function='exponential',
-    normalize=True
+    eps=0.1,                  
+    min_fuzzy_neighbors=5.0,    
+    min_membership=0.0,        
+    fuzzy_function='exponential', 
+    normalize=True              
 )
+
 labels = model.fit_predict(X)
 
 print(f"Found {model.n_clusters_} clusters")
-# Found 2 clusters
 ```
 
 ## Why FN-DBSCAN?
