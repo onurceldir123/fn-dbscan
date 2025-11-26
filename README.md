@@ -122,6 +122,7 @@ If you use `fn-dbscan` in your research, please consider citing the original pap
   doi          = {10.5281/zenodo.17726044},
   url          = {[https://github.com/onurceldir123/fn-dbscan](https://github.com/onurceldir123/fn-dbscan)}
 }
+```
 
 ## License
 
