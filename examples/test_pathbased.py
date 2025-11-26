@@ -72,12 +72,12 @@ def main():
         {
             'type': 'FN-DBSCAN',
             'name': 'FN-DBSCAN (Exp, eps=0.05, k=20)',
-            'params': {'eps': 0.05, 'epsilon2': 4.0, 'fuzzy_function': 'exponential', 'k': 20}
+            'params': {'eps': 0.05, 'min_fuzzy_neighbors': 4.0, 'fuzzy_function': 'exponential', 'k': 20}
         },
         {
             'type': 'FN-DBSCAN',
             'name': 'FN-DBSCAN (Linear, eps=0.06)',
-            'params': {'eps': 0.06, 'epsilon2': 4.0, 'fuzzy_function': 'linear'}
+            'params': {'eps': 0.06, 'min_fuzzy_neighbors': 4.0, 'fuzzy_function': 'linear'}
         }
     ]
 

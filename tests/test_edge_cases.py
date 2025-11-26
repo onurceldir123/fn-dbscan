@@ -16,7 +16,7 @@ class TestInputEdgeCases:
     def test_edge_case_1_empty_dataset(self):
         """Edge Case 1: Empty dataset."""
         X = np.array([]).reshape(0, 2)
-        model = FN_DBSCAN(eps=0.5, min_cardinality=3)
+        model = FN_DBSCAN(eps=0.5, min_fuzzy_neighbors=3)
 
         with pytest.raises(ValueError, match="0 samples"):
             model.fit(X)
@@ -24,7 +24,7 @@ class TestInputEdgeCases:
     def test_edge_case_2_single_point(self):
         """Edge Case 2: Single point."""
         X = np.array([[1, 2]])
-        model = FN_DBSCAN(eps=0.5, min_cardinality=3)
+        model = FN_DBSCAN(eps=0.5, min_fuzzy_neighbors=3)
         model.fit(X)
 
         # Cardinality = 1.0 < 3, so noise
@@ -34,7 +34,7 @@ class TestInputEdgeCases:
     def test_edge_case_3_two_identical_points(self):
         """Edge Case 3: Two identical points."""
         X = np.array([[1, 2], [1, 2]])
-        model = FN_DBSCAN(eps=0.5, min_cardinality=2)
+        model = FN_DBSCAN(eps=0.5, min_fuzzy_neighbors=2)
         model.fit(X)
 
         # Both points have cardinality 2.0
@@ -45,7 +45,7 @@ class TestInputEdgeCases:
     def test_edge_case_4_min_cardinality_one(self):
         """Edge Case 4: MinCard = 1."""
         X = np.array([[1, 2], [10, 20], [100, 200]])
-        model = FN_DBSCAN(eps=1.0, min_cardinality=1.0)
+        model = FN_DBSCAN(eps=1.0, min_fuzzy_neighbors=1.0)
         model.fit(X)
 
         # Every point is core (cardinality ≥ 1.0)
@@ -61,7 +61,7 @@ class TestInputEdgeCases:
     def test_edge_case_6_extremely_small_eps(self):
         """Edge Case 6: Extremely small ε."""
         X = np.array([[0.0, 0.0], [0.1, 0.1], [0.2, 0.2]])
-        model = FN_DBSCAN(eps=0.01, min_cardinality=2)
+        model = FN_DBSCAN(eps=0.01, min_fuzzy_neighbors=2)
         model.fit(X)
 
         # No point has neighbors, all noise
@@ -79,7 +79,7 @@ class TestNumericalEdgeCases:
             [1e-15, 1e-15],  # Extremely close
             [1e-10, 1e-10]
         ])
-        model = FN_DBSCAN(eps=1.0, min_cardinality=2)
+        model = FN_DBSCAN(eps=1.0, min_fuzzy_neighbors=2)
         model.fit(X)
 
         # Should handle small distances correctly
@@ -89,7 +89,7 @@ class TestNumericalEdgeCases:
         """Edge Case 8: Distance exactly at ε."""
         # Create points exactly eps apart
         X = np.array([[0, 0], [1, 0]])  # Distance = 1.0
-        model = FN_DBSCAN(eps=1.0, min_cardinality=1.5, fuzzy_function='linear')
+        model = FN_DBSCAN(eps=1.0, min_fuzzy_neighbors=1.5, fuzzy_function='linear')
         model.fit(X)
 
         # For linear: membership at distance=eps is 0
@@ -120,7 +120,7 @@ class TestNumericalEdgeCases:
 
         # With linear membership and eps=1.5:
         # Point 1: self(1.0) + point0(~0.33) + point2(~0.33) ≈ 1.66
-        model = FN_DBSCAN(eps=1.5, min_cardinality=1.67)
+        model = FN_DBSCAN(eps=1.5, min_fuzzy_neighbors=1.67)
         model.fit(X)
 
         # Point 1 should not be core
@@ -139,7 +139,7 @@ class TestAlgorithmicEdgeCases:
 
         X = np.vstack([inner, outer])
 
-        model = FN_DBSCAN(eps=1.0, min_cardinality=3)
+        model = FN_DBSCAN(eps=1.0, min_fuzzy_neighbors=3)
         model.fit(X)
 
         # Should detect at least inner cluster
@@ -156,7 +156,7 @@ class TestAlgorithmicEdgeCases:
             [2, 0.1]  # Support for core 2
         ])
 
-        model = FN_DBSCAN(eps=1.5, min_cardinality=2)
+        model = FN_DBSCAN(eps=1.5, min_fuzzy_neighbors=2)
         model.fit(X)
 
         # Border point should be assigned deterministically
@@ -171,7 +171,7 @@ class TestAlgorithmicEdgeCases:
             [3, 0]  # Initially noise, but reachable
         ])
 
-        model = FN_DBSCAN(eps=1.5, min_cardinality=1.6)
+        model = FN_DBSCAN(eps=1.5, min_fuzzy_neighbors=1.6)
         model.fit(X)
 
         # Point 3 should be border point (not noise)
@@ -188,7 +188,7 @@ class TestAlgorithmicEdgeCases:
             [300, 300]
         ])
 
-        model = FN_DBSCAN(eps=1.0, min_cardinality=5)
+        model = FN_DBSCAN(eps=1.0, min_fuzzy_neighbors=5)
         model.fit(X)
 
         assert model.n_clusters_ == 0
@@ -200,7 +200,7 @@ class TestAlgorithmicEdgeCases:
         # Dense cluster where all points are connected
         X = np.random.RandomState(42).randn(20, 2) * 0.5
 
-        model = FN_DBSCAN(eps=2.0, min_cardinality=3)
+        model = FN_DBSCAN(eps=2.0, min_fuzzy_neighbors=3)
         model.fit(X)
 
         # Should form one cluster
@@ -219,7 +219,7 @@ class TestFuzzyFunctionEdgeCases:
         """Test linear function behavior at epsilon boundary."""
         X = np.array([[0, 0], [1, 0]])  # Distance = 1.0
 
-        model = FN_DBSCAN(eps=1.0, min_cardinality=1.5, fuzzy_function='linear')
+        model = FN_DBSCAN(eps=1.0, min_fuzzy_neighbors=1.5, fuzzy_function='linear')
         model.fit(X)
 
         # Linear membership at d=eps is exactly 0
@@ -230,7 +230,7 @@ class TestFuzzyFunctionEdgeCases:
         """Test exponential function behavior at epsilon boundary."""
         X = np.array([[0, 0], [1, 0]])  # Distance = 1.0
 
-        model = FN_DBSCAN(eps=1.0, min_cardinality=1.2, fuzzy_function='exponential')
+        model = FN_DBSCAN(eps=1.0, min_fuzzy_neighbors=1.2, fuzzy_function='exponential')
         model.fit(X)
 
         # Exponential membership at d=eps is set to 0 (by design)
@@ -241,7 +241,7 @@ class TestFuzzyFunctionEdgeCases:
         """Test trapezoidal function in plateau region."""
         X = np.array([[0, 0], [0.25, 0]])  # Distance = 0.25
 
-        model = FN_DBSCAN(eps=1.0, min_cardinality=1.9, fuzzy_function='trapezoidal')
+        model = FN_DBSCAN(eps=1.0, min_fuzzy_neighbors=1.9, fuzzy_function='trapezoidal')
         model.fit(X)
 
         # Distance 0.25 < eps/2 = 0.5, so membership = 1.0
@@ -257,7 +257,7 @@ class TestLargeDatasets:
         np.random.seed(42)
         X = np.random.randn(1000, 2)
 
-        model = FN_DBSCAN(eps=0.5, min_cardinality=5)
+        model = FN_DBSCAN(eps=0.5, min_fuzzy_neighbors=5)
         model.fit(X)
 
         assert len(model.labels_) == 1000
@@ -268,7 +268,7 @@ class TestLargeDatasets:
         np.random.seed(42)
         X = np.random.randn(100, 50)  # 50 dimensions
 
-        model = FN_DBSCAN(eps=5.0, min_cardinality=3)
+        model = FN_DBSCAN(eps=5.0, min_fuzzy_neighbors=3)
         model.fit(X)
 
         assert len(model.labels_) == 100
@@ -281,17 +281,17 @@ class TestSpecialConfigurations:
         """Test with very large epsilon."""
         X = np.array([[1, 2], [3, 4], [5, 6], [7, 8]])
 
-        model = FN_DBSCAN(eps=100.0, min_cardinality=2)
+        model = FN_DBSCAN(eps=100.0, min_fuzzy_neighbors=2)
         model.fit(X)
 
         # All points are neighbors of all, should form one cluster
         assert model.n_clusters_ == 1
 
     def test_very_small_min_cardinality(self):
-        """Test with very small min_cardinality."""
+        """Test with very small min_fuzzy_neighbors."""
         X = np.array([[1, 2], [3, 4], [5, 6]])
 
-        model = FN_DBSCAN(eps=1.0, min_cardinality=0.5)
+        model = FN_DBSCAN(eps=1.0, min_fuzzy_neighbors=0.5)
         model.fit(X)
 
         # Almost everything is core
@@ -302,15 +302,15 @@ class TestSpecialConfigurations:
         X = np.array([[0, 0], [1, 0], [2, 0], [3, 0]])
 
         labels_linear = FN_DBSCAN(
-            eps=2.0, min_cardinality=2.5, fuzzy_function='linear'
+            eps=2.0, min_fuzzy_neighbors=2.5, fuzzy_function='linear'
         ).fit_predict(X)
 
         labels_exp = FN_DBSCAN(
-            eps=2.0, min_cardinality=2.5, fuzzy_function='exponential'
+            eps=2.0, min_fuzzy_neighbors=2.5, fuzzy_function='exponential'
         ).fit_predict(X)
 
         labels_trap = FN_DBSCAN(
-            eps=2.0, min_cardinality=2.5, fuzzy_function='trapezoidal'
+            eps=2.0, min_fuzzy_neighbors=2.5, fuzzy_function='trapezoidal'
         ).fit_predict(X)
 
         # All should work, though results may differ

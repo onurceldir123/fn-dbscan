@@ -42,9 +42,9 @@ dbscan_configs = [
 
 # FN-DBSCAN: Daha büyük eps ve farklı k değerleri ile spiral yapıyı yakalamaya çalış
 fndbscan_configs = [
-    {'eps': 0.1, 'epsilon2': 5, 'k': 15, 'name': 'FN-DBSCAN-1 (k=15)'},
-    {'eps': 0.12, 'epsilon2': 5, 'k': 20, 'name': 'FN-DBSCAN-2 (k=20)'},
-    {'eps': 0.1, 'epsilon2': 4, 'k': 25, 'name': 'FN-DBSCAN-3 (k=25)'},
+    {'eps': 0.1, 'min_fuzzy_neighbors': 5, 'k': 15, 'name': 'FN-DBSCAN-1 (k=15)'},
+    {'eps': 0.12, 'min_fuzzy_neighbors': 5, 'k': 20, 'name': 'FN-DBSCAN-2 (k=20)'},
+    {'eps': 0.1, 'min_fuzzy_neighbors': 4, 'k': 25, 'name': 'FN-DBSCAN-3 (k=25)'},
 ]
 
 # Test all configurations

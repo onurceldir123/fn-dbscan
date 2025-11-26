@@ -39,7 +39,7 @@ param_grid_dbscan = {
 
 param_grid_fndbscan = {
     'eps': [0.05, 0.07, 0.09, 0.11, 0.13, 0.15],
-    'epsilon2': [3, 4, 5, 6],
+    'min_fuzzy_neighbors': [3, 4, 5, 6],
     'k': [10, 15, 20, 25]
 }
 
@@ -86,16 +86,16 @@ print("\n" + "-"*60)
 print("OPTIMIZING FN-DBSCAN...")
 print("-"*60)
 
-total_configs = (len(param_grid_fndbscan['eps']) * len(param_grid_fndbscan['epsilon2']) * 
+total_configs = (len(param_grid_fndbscan['eps']) * len(param_grid_fndbscan['min_fuzzy_neighbors']) * 
                  len(param_grid_fndbscan['k']))
 current = 0
 
 for eps in param_grid_fndbscan['eps']:
-    for epsilon2 in param_grid_fndbscan['epsilon2']:
+    for min_fuzzy_neighbors in param_grid_fndbscan['min_fuzzy_neighbors']:
         for k in param_grid_fndbscan['k']:
             current += 1
             
-            fndbscan = FN_DBSCAN(eps=eps, epsilon2=epsilon2, k=k, 
+            fndbscan = FN_DBSCAN(eps=eps, min_fuzzy_neighbors=min_fuzzy_neighbors, k=k, 
                                 fuzzy_function='exponential', normalize=False)
             labels = fndbscan.fit_predict(X_norm)
             
@@ -113,12 +113,12 @@ for eps in param_grid_fndbscan['eps']:
                 if silhouette > best_fndbscan['silhouette']:
                     best_fndbscan = {
                         'silhouette': silhouette,
-                        'params': {'eps': eps, 'epsilon2': epsilon2, 'k': k},
+                        'params': {'eps': eps, 'min_fuzzy_neighbors': min_fuzzy_neighbors, 'k': k},
                         'labels': labels.copy(),
                         'n_clusters': n_clusters,
                         'n_noise': n_noise
                     }
-                    print(f"  [{current}/{total_configs}] New best: eps={eps:.2f}, epsilon2={epsilon2}, k={k}, "
+                    print(f"  [{current}/{total_configs}] New best: eps={eps:.2f}, min_fuzzy_neighbors={min_fuzzy_neighbors}, k={k}, "
                           f"clusters={n_clusters}, noise={n_noise}, Silhouette={silhouette:.4f}")
 
 print("\n" + "="*60)
@@ -132,7 +132,7 @@ print(f"   Noise: {best_dbscan['n_noise']} ({best_dbscan['n_noise']/len(X)*100:.
 print(f"   Silhouette Score: {best_dbscan['silhouette']:.4f}")
 
 print(f"\n🏆 BEST FN-DBSCAN:")
-print(f"   Parameters: eps={best_fndbscan['params']['eps']:.2f}, epsilon2={best_fndbscan['params']['epsilon2']}, k={best_fndbscan['params']['k']}")
+print(f"   Parameters: eps={best_fndbscan['params']['eps']:.2f}, min_fuzzy_neighbors={best_fndbscan['params']['min_fuzzy_neighbors']}, k={best_fndbscan['params']['k']}")
 print(f"   Clusters: {best_fndbscan['n_clusters']}")
 print(f"   Noise: {best_fndbscan['n_noise']} ({best_fndbscan['n_noise']/len(X)*100:.1f}%)")
 print(f"   Silhouette Score: {best_fndbscan['silhouette']:.4f}")
@@ -167,7 +167,7 @@ ax3 = fig.add_subplot(133)
 scatter3 = ax3.scatter(X[:, 0], X[:, 1], c=best_fndbscan['labels'], 
                        cmap='tab10', s=20, alpha=0.7, edgecolors='black', linewidth=0.3)
 title3 = f"BEST FN-DBSCAN\n"
-title3 += f"eps={best_fndbscan['params']['eps']:.2f}, epsilon2={best_fndbscan['params']['epsilon2']}, k={best_fndbscan['params']['k']}\n"
+title3 += f"eps={best_fndbscan['params']['eps']:.2f}, min_fuzzy_neighbors={best_fndbscan['params']['min_fuzzy_neighbors']}, k={best_fndbscan['params']['k']}\n"
 title3 += f"{best_fndbscan['n_clusters']} clusters, {best_fndbscan['n_noise']} noise\n"
 title3 += f"Silhouette: {best_fndbscan['silhouette']:.4f}"
 ax3.set_title(title3, fontsize=11, fontweight='bold', color='darkgreen')
@@ -205,7 +205,7 @@ results_df = pd.DataFrame([
     {
         'Algorithm': 'DBSCAN',
         'eps': best_dbscan['params']['eps'],
-        'min_samples/epsilon2': best_dbscan['params']['min_samples'],
+        'min_samples/min_fuzzy_neighbors': best_dbscan['params']['min_samples'],
         'k': 'N/A',
         'Clusters': best_dbscan['n_clusters'],
         'Noise': best_dbscan['n_noise'],
@@ -215,7 +215,7 @@ results_df = pd.DataFrame([
     {
         'Algorithm': 'FN-DBSCAN',
         'eps': best_fndbscan['params']['eps'],
-        'min_samples/epsilon2': best_fndbscan['params']['epsilon2'],
+        'min_samples/min_fuzzy_neighbors': best_fndbscan['params']['min_fuzzy_neighbors'],
         'k': best_fndbscan['params']['k'],
         'Clusters': best_fndbscan['n_clusters'],
         'Noise': best_fndbscan['n_noise'],

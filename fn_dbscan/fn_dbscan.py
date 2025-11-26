@@ -35,15 +35,17 @@ class FN_DBSCAN(BaseEstimator, ClusterMixin):
         as in the neighborhood of the other (ε in the paper).
         For normalized data (normalize=True), this should be in [0, 1].
 
-    epsilon1 : float, default=0.0
-        The minimum membership threshold (α-cut level, ε1 in the paper).
-        Points with membership degree < epsilon1 are not considered neighbors.
+    min_membership : float, default=0.0
+        The minimum fuzzy membership threshold (α-cut level, ε₁ in the paper).
+        Points with membership degree < min_membership are not considered neighbors.
         Should be in [0, 1]. Use 0.0 to include all points within eps radius.
+        This parameter was formerly called 'epsilon1'.
 
-    epsilon2 : float, default=5.0
+    min_fuzzy_neighbors : float, default=5.0
         The minimum fuzzy cardinality required for a point to be classified
         as a core point (ε₂ in the paper). This is the fuzzy equivalent of
         DBSCAN's min_samples parameter.
+        This parameter was formerly called 'epsilon2' or 'min_cardinality'.
 
     fuzzy_function : {'linear', 'exponential', 'trapezoidal'}, default='linear'
         The fuzzy membership function to use for calculating neighborhood
@@ -58,17 +60,23 @@ class FN_DBSCAN(BaseEstimator, ClusterMixin):
 
     k : float or None, default=None
         The parameter that controls the shape of the fuzzy membership function.
-        If None, it will be automatically calculated based on eps:
-        - For linear: k = d_max / eps
-        - For exponential: k = 20 (recommended by the paper)
-        Higher k values make the membership function steeper.
+        If None, it will be automatically calculated as k = d_max / eps for all
+        fuzzy functions. This provides better adaptability across different datasets
+        and eps values. Higher k values make the membership function steeper.
+        The paper suggests k=20 for exponential, but auto-calculation is recommended.
 
     normalize : bool, default=True
         Whether to normalize the data so that maximum distance is ≤ 1.
         This is recommended in the paper to make eps parameter scale-independent.
 
-    min_cardinality : float, optional (deprecated)
-        Deprecated. Use epsilon2 instead. Kept for backward compatibility.
+    epsilon1 : float, optional (legacy)
+        Legacy parameter. Use min_membership instead. Kept for backward compatibility.
+
+    epsilon2 : float, optional (legacy)
+        Legacy parameter. Use min_fuzzy_neighbors instead. Kept for backward compatibility.
+
+    min_cardinality : float, optional (legacy)
+        Legacy parameter. Use min_fuzzy_neighbors instead. Kept for backward compatibility.
 
     Attributes
     ----------
@@ -109,38 +117,41 @@ class FN_DBSCAN(BaseEstimator, ClusterMixin):
     def __init__(
         self,
         eps: float = 0.5,
-        epsilon1: float = 0.0,
-        epsilon2: Optional[float] = None,
+        min_membership: float = 0.0,
+        min_fuzzy_neighbors: Optional[float] = None,
         fuzzy_function: str = 'linear',
         metric: str = 'euclidean',
         k: Optional[float] = None,
         normalize: bool = True,
-        min_cardinality: Optional[float] = None  # Deprecated, use epsilon2
+        # Legacy parameters (kept for backward compatibility)
+        epsilon1: Optional[float] = None,
+        epsilon2: Optional[float] = None,
+        min_cardinality: Optional[float] = None
     ):
-        import warnings
+        # Handle backward compatibility for epsilon1
+        if epsilon1 is not None:
+            min_membership = epsilon1
 
-        # Handle backward compatibility
-        if min_cardinality is not None and epsilon2 is None:
-            warnings.warn(
-                "Parameter 'min_cardinality' is deprecated and will be removed in a future version. "
-                "Use 'epsilon2' instead to match the paper's notation.",
-                DeprecationWarning,
-                stacklevel=2
-            )
-            epsilon2 = min_cardinality
-        elif epsilon2 is None:
-            epsilon2 = 5.0  # Default value
+        # Handle backward compatibility for epsilon2 and min_cardinality
+        if epsilon2 is not None and min_fuzzy_neighbors is None:
+            min_fuzzy_neighbors = epsilon2
+        elif min_cardinality is not None and min_fuzzy_neighbors is None:
+            min_fuzzy_neighbors = min_cardinality
+        elif min_fuzzy_neighbors is None:
+            min_fuzzy_neighbors = 5.0  # Default value
 
         self.eps = eps
-        self.epsilon1 = epsilon1
-        self.epsilon2 = epsilon2
+        self.min_membership = min_membership
+        self.min_fuzzy_neighbors = min_fuzzy_neighbors
         self.fuzzy_function = fuzzy_function
         self.metric = metric
         self.k = k
         self.normalize = normalize
 
-        # Keep for backward compatibility in attributes
-        self.min_cardinality = self.epsilon2
+        # Keep old attributes for backward compatibility
+        self.epsilon1 = self.min_membership
+        self.epsilon2 = self.min_fuzzy_neighbors
+        self.min_cardinality = self.min_fuzzy_neighbors
 
     def fit(self, X, y=None):
         """Perform FN-DBSCAN clustering from features.
@@ -160,7 +171,7 @@ class FN_DBSCAN(BaseEstimator, ClusterMixin):
         """
         # Validate parameters
         validate_fit_params(
-            self.eps, self.epsilon2,
+            self.eps, self.min_fuzzy_neighbors,
             self.fuzzy_function, self.metric
         )
 
@@ -223,7 +234,7 @@ class FN_DBSCAN(BaseEstimator, ClusterMixin):
             )
 
             # Check if point is a core point
-            if cardinality < self.epsilon2:
+            if cardinality < self.min_fuzzy_neighbors:
                 # Mark as noise (may be changed later if reached by cluster)
                 labels[point_idx] = NOISE
                 continue
@@ -324,10 +335,10 @@ class FN_DBSCAN(BaseEstimator, ClusterMixin):
         # Calculate fuzzy memberships with k and d_max parameters
         memberships = membership_func(distances, self.eps, self._k, self._d_max)
 
-        # Apply epsilon1 threshold (alpha-cut level)
-        # Only count neighbors with membership >= epsilon1
-        if self.epsilon1 > 0:
-            memberships = np.where(memberships >= self.epsilon1, memberships, 0.0)
+        # Apply min_membership threshold (alpha-cut level)
+        # Only count neighbors with membership >= min_membership
+        if self.min_membership > 0:
+            memberships = np.where(memberships >= self.min_membership, memberships, 0.0)
 
         # Sum memberships to get fuzzy cardinality
         cardinality = np.sum(memberships)
@@ -391,7 +402,7 @@ class FN_DBSCAN(BaseEstimator, ClusterMixin):
             )
 
             # If q is also a core point, add its neighbors to seed set
-            if q_cardinality >= self.epsilon2:
+            if q_cardinality >= self.min_fuzzy_neighbors:
                 # Add new neighbors to seed set (avoiding duplicates is not
                 # critical as we check visited flag)
                 seed_set.extend(q_neighbors)
@@ -438,23 +449,20 @@ class FN_DBSCAN(BaseEstimator, ClusterMixin):
     def _calculate_k(self) -> float:
         """Calculate k parameter based on fuzzy function and eps.
 
-        As described in the paper (pages 5-6):
-        - Linear: k = d_max / eps
-        - Exponential: k = 20 (recommended value from experiments)
-        - Trapezoidal: k = d_max / eps
+        For all fuzzy functions, k is calculated as k = d_max / eps.
+        This ensures that the membership function adapts to the scale of the data
+        and the chosen neighborhood radius.
+
+        Note: The paper suggests k=20 for exponential, but we use a dynamic
+        calculation for better adaptability across different datasets and eps values.
 
         Returns
         -------
         k : float
             The calculated k parameter.
         """
-        if self.fuzzy_function == 'linear':
-            # k = d_max / eps (from equation after formula 5)
-            return self._d_max / self.eps if self.eps > 0 else 1.0
-        elif self.fuzzy_function == 'exponential':
-            # From Table 1: best results with k=20
-            return 20.0
-        elif self.fuzzy_function == 'trapezoidal':
+        if self.fuzzy_function in ['linear', 'exponential', 'trapezoidal']:
+            # k = d_max / eps (adapts to data scale and eps)
             return self._d_max / self.eps if self.eps > 0 else 1.0
         else:
             return 1.0

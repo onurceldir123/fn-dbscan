@@ -37,9 +37,9 @@ dbscan_configs = [
 ]
 
 fndbscan_configs = [
-    {'eps': 0.08, 'epsilon2': 4, 'k': 20, 'name': 'FN-DBSCAN (eps=0.08)'},
-    {'eps': 0.09, 'epsilon2': 4, 'k': 20, 'name': 'FN-DBSCAN (eps=0.09)'},
-    {'eps': 0.10, 'epsilon2': 4, 'k': 20, 'name': 'FN-DBSCAN (eps=0.10)'},
+    {'eps': 0.08, 'min_fuzzy_neighbors': 4, 'k': 20, 'name': 'FN-DBSCAN (eps=0.08)'},
+    {'eps': 0.09, 'min_fuzzy_neighbors': 4, 'k': 20, 'name': 'FN-DBSCAN (eps=0.09)'},
+    {'eps': 0.10, 'min_fuzzy_neighbors': 4, 'k': 20, 'name': 'FN-DBSCAN (eps=0.10)'},
 ]
 
 results = []
@@ -74,7 +74,7 @@ for config in dbscan_configs:
     config['name'] = name
 
 print("\nTesting FN-DBSCAN configurations...")
-print("Parameters: epsilon2=4, k=20, function='exponential', eps varies")
+print("Parameters: min_fuzzy_neighbors=4, k=20, function='exponential', eps varies")
 for config in fndbscan_configs:
     name = config.pop('name')
     fndbscan = FN_DBSCAN(fuzzy_function='exponential', normalize=False, **config)
@@ -174,7 +174,7 @@ ax_best1.set_ylabel('Y', fontsize=10)
 ax_best2 = fig.add_subplot(gs[2, 1])
 scatter2 = ax_best2.scatter(X[:, 0], X[:, 1], c=best_fndbscan['labels'], cmap='tab10', 
                            s=25, alpha=0.8, edgecolors='black', linewidth=0.3)
-ax_best2.set_title(f"🏆 BEST FN-DBSCAN\neps={best_fndbscan['params']['eps']}, epsilon2={best_fndbscan['params']['epsilon2']}, k={best_fndbscan['params']['k']}\n{best_fndbscan['n_clusters']} clusters, Silhouette: {best_fndbscan['silhouette']:.3f}", 
+ax_best2.set_title(f"🏆 BEST FN-DBSCAN\neps={best_fndbscan['params']['eps']}, min_fuzzy_neighbors={best_fndbscan['params']['min_fuzzy_neighbors']}, k={best_fndbscan['params']['k']}\n{best_fndbscan['n_clusters']} clusters, Silhouette: {best_fndbscan['silhouette']:.3f}", 
                    fontsize=11, fontweight='bold', color='darkgreen')
 ax_best2.grid(True, alpha=0.3)
 ax_best2.set_xlabel('X', fontsize=10)
@@ -188,7 +188,7 @@ ax_table.axis('off')
 table_data = [
     ['Metric', 'DBSCAN', 'FN-DBSCAN'],
     ['eps', f"{best_dbscan['params']['eps']}", f"{best_fndbscan['params']['eps']}"],
-    ['min_samples/ε2', f"{best_dbscan['params']['min_samples']}", f"{best_fndbscan['params']['epsilon2']}"],
+    ['min_samples/ε2', f"{best_dbscan['params']['min_samples']}", f"{best_fndbscan['params']['min_fuzzy_neighbors']}"],
     ['k', 'N/A', f"{best_fndbscan['params']['k']}"],
     ['Clusters', f"{best_dbscan['n_clusters']}", f"{best_fndbscan['n_clusters']}"],
     ['Noise', f"{best_dbscan['n_noise']} ({best_dbscan['n_noise']/len(X)*100:.1f}%)", 
@@ -215,7 +215,7 @@ for i in range(1, len(table_data)):
 
 ax_table.set_title('Best Configuration Comparison', fontsize=11, fontweight='bold', pad=15)
 
-plt.suptitle('Spiral Dataset: Recommended Parameters Test\nDBSCAN: eps=0.06-0.08, min_samples=4 | FN-DBSCAN: eps=0.08-0.10, epsilon2=4, k=20', 
+plt.suptitle('Spiral Dataset: Recommended Parameters Test\nDBSCAN: eps=0.06-0.08, min_samples=4 | FN-DBSCAN: eps=0.08-0.10, min_fuzzy_neighbors=4, k=20', 
              fontsize=13, fontweight='bold', y=0.995)
 plt.savefig('spiral_recommended_params.png', dpi=150, bbox_inches='tight')
 print("\n✅ Visualization saved: spiral_recommended_params.png")

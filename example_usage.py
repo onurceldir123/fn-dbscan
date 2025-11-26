@@ -10,7 +10,7 @@ print("Örnek 1: Basit Clustering")
 print("=" * 50)
 
 X = np.array([[1, 2], [2, 2], [2, 3], [8, 7], [8, 8], [25, 80]])
-model = FN_DBSCAN(eps=3, min_cardinality=2, fuzzy_function='linear')
+model = FN_DBSCAN(eps=3, min_fuzzy_neighbors=2, fuzzy_function='linear')
 labels = model.fit_predict(X)
 
 print(f"Veri noktaları:\n{X}")
@@ -24,7 +24,7 @@ print("Örnek 2: Moons Dataset (Non-convex)")
 print("=" * 50)
 
 X, _ = make_moons(n_samples=200, noise=0.1, random_state=42)
-model = FN_DBSCAN(eps=0.3, min_cardinality=5)
+model = FN_DBSCAN(eps=0.3, min_fuzzy_neighbors=5)
 labels = model.fit_predict(X)
 
 print(f"Veri boyutu: {X.shape}")
@@ -60,7 +60,7 @@ print("=" * 50)
 X, _ = make_blobs(n_samples=300, centers=3, random_state=42)
 
 for fuzzy_func in ['linear', 'exponential', 'trapezoidal']:
-    model = FN_DBSCAN(eps=0.7, min_cardinality=5, fuzzy_function=fuzzy_func)
+    model = FN_DBSCAN(eps=0.7, min_fuzzy_neighbors=5, fuzzy_function=fuzzy_func)
     labels = model.fit_predict(X)
     print(f"{fuzzy_func:12s}: {model.n_clusters_} cluster, {sum(labels == -1)} gürültü noktası")
 

@@ -46,7 +46,7 @@ def main():
         print(f"\nRunning FN-DBSCAN with {fuzzy_func} membership...")
         fn_dbscan = FN_DBSCAN(
             eps=eps,
-            min_cardinality=min_samples,
+            min_fuzzy_neighbors=min_samples,
             fuzzy_function=fuzzy_func
         )
         labels_fn = fn_dbscan.fit_predict(X)

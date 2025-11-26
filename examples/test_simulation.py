@@ -58,8 +58,8 @@ def main():
     config = {
         'name': 'Simulation (Linear, k=1.0, eps1=0.5)',
         'params': {
-            'epsilon1': 0.5,        # Klasik DBSCAN'deki 'eps' (Yarıçap) değeri gibi davranması hedefleniyor
-            'epsilon2': 4.0,        # Klasik DBSCAN'deki 'MinPts'
+            'min_membership': 0.5,        # Klasik DBSCAN'deki 'eps' (Yarıçap) değeri gibi davranması hedefleniyor
+            'min_fuzzy_neighbors': 4.0,        # Klasik DBSCAN'deki 'MinPts'
             'fuzzy_function': 'linear', 
             'k': 1.0,               # Lineer fonksiyonun crisp davranışa yaklaşması için
             'normalize': True,

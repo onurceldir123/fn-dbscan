@@ -53,12 +53,12 @@ X = np.array([[1, 2], [2, 2], [2, 3], [8, 7], [8, 8], [25, 80]])
 
 # Create and fit the model
 model = FN_DBSCAN(
-    eps=0.3,                    # ε: Neighborhood radius (for normalized data: 0-1)
-    epsilon1=0.0,               # ε₁: Membership threshold (0 = no filtering)
-    epsilon2=2.0,               # ε₂: Minimum fuzzy cardinality (like MinPts)
+    eps=0.3,                      # ε: Neighborhood radius (for normalized data: 0-1)
+    min_membership=0.0,           # Minimum fuzzy membership threshold (0 = no filtering)
+    min_fuzzy_neighbors=2.0,      # Minimum fuzzy cardinality (like MinPts in DBSCAN)
     fuzzy_function='exponential', # Membership function type
-    k=5,                        # k: Shape parameter
-    normalize=True              # Normalize data (recommended)
+    k=5,                          # k: Shape parameter
+    normalize=True                # Normalize data (recommended)
 )
 labels = model.fit_predict(X)
 
@@ -77,11 +77,11 @@ X, _ = make_moons(n_samples=200, noise=0.05, random_state=42)
 
 # Cluster with exponential membership function (recommended in paper)
 model = FN_DBSCAN(
-    eps=0.2,            # ε: Neighborhood radius
-    epsilon1=0.0,       # ε₁: No membership filtering
-    epsilon2=5.0,       # ε₂: Minimum fuzzy cardinality
+    eps=0.2,                 # ε: Neighborhood radius
+    min_membership=0.0,      # No membership filtering
+    min_fuzzy_neighbors=5.0, # Minimum fuzzy cardinality
     fuzzy_function='exponential',
-    k=2,                # k: Lower values for gradual membership decay
+    k=2,                     # k: Lower values for gradual membership decay
     normalize=True
 )
 labels = model.fit_predict(X)
@@ -97,10 +97,12 @@ The main class for Fuzzy Neighborhood DBSCAN clustering.
 
 - **`eps`** : *float, default=0.5* Maximum distance for neighborhood ($\epsilon$ in the paper). For normalized data, this should be in $[0, 1]$. Points within this distance are considered potential neighbors.
 
-- **`epsilon1`** : *float, default=0.0* Minimum membership threshold ($\epsilon_1$ or $\alpha$-cut level in the paper). Points with membership degree $\mu(d) < \epsilon_1$ are not considered neighbors.  
+- **`min_membership`** : *float, default=0.0* Minimum fuzzy membership threshold ($\epsilon_1$ or $\alpha$-cut level in the paper). Points with membership degree $\mu(d) <$ `min_membership` are not considered neighbors.
   *Range:* $[0, 1]$. Use `0.0` to include all points within the `eps` radius.
+  *Formerly called:* `epsilon1`
 
-- **`epsilon2`** : *float, default=5.0* Minimum fuzzy cardinality for a point to be classified as a core point ($\epsilon_2$ in the paper). This is the fuzzy equivalent of standard DBSCAN's `min_samples`.
+- **`min_fuzzy_neighbors`** : *float, default=5.0* Minimum fuzzy cardinality for a point to be classified as a core point ($\epsilon_2$ in the paper). This is the fuzzy equivalent of standard DBSCAN's `min_samples`.
+  *Formerly called:* `epsilon2` or `min_cardinality`
 
 - **`fuzzy_function`** : *{'linear', 'exponential', 'trapezoidal'}, default='linear'* The fuzzy membership function $\mu(d)$ to use for calculating neighborhood density:
   
@@ -111,9 +113,9 @@ The main class for Fuzzy Neighborhood DBSCAN clustering.
 - **`metric`** : *str or callable, default='euclidean'* The distance metric to use. Can be any metric supported by `sklearn.metrics.pairwise`.
 
 - **`k`** : *float or None, default=None* Parameter that controls the steepness/shape of the fuzzy membership function.
-  - **If `None` (Auto):**
-    - *Linear:* $k = d_{max} / \epsilon$
-    - *Exponential:* $k = 20$ (recommended by Nasibov & Ulutagay)
+  - **If `None` (Auto):** $k = d_{max} / \epsilon$ for all fuzzy functions
+    - Automatically adapts to data scale and neighborhood radius
+    - The paper suggests k=20 for exponential, but dynamic calculation provides better adaptability
   - **Manual:** Higher $k$ values create a steeper decay.
     - *Recommended:* `1-5` for gradual decay, `15-20` for steep decay.
 
@@ -155,7 +157,7 @@ $$
 \mu(d) = \exp\left(-\left(\frac{k \cdot d}{d_{max}}\right)^2\right)
 $$
 
-* **Recommended $k$:** `20` (best results cited in the paper), or `1-10` for more gradual decay.
+* **Recommended $k$:** Auto ($d_{max}/\epsilon$) for dynamic adaptation, or `20` as suggested in the paper for fixed behavior. Manual values: `1-10` for gradual decay.
 * **Best for:** Non-convex clusters and datasets with varying densities.
 
 ---
@@ -185,7 +187,7 @@ from fn_dbscan import FN_DBSCAN
 X, _ = make_blobs(n_samples=300, centers=3, random_state=42)
 
 # Fit FN-DBSCAN
-model = FN_DBSCAN(eps=0.7, epsilon2=5)
+model = FN_DBSCAN(eps=0.7, min_fuzzy_neighbors=5)
 labels = model.fit_predict(X)
 
 print(f"Found {model.n_clusters_} clusters")
@@ -207,7 +209,7 @@ dbscan = DBSCAN(eps=0.2, min_samples=5)
 labels_dbscan = dbscan.fit_predict(X)
 
 # FN-DBSCAN with linear membership
-fn_dbscan = FN_DBSCAN(eps=0.2, epsilon2=5, fuzzy_function='linear')
+fn_dbscan = FN_DBSCAN(eps=0.2, min_fuzzy_neighbors=5, fuzzy_function='linear')
 labels_fn = fn_dbscan.fit_predict(X)
 
 print(f"DBSCAN found {len(set(labels_dbscan)) - 1} clusters")
@@ -224,7 +226,7 @@ from fn_dbscan import FN_DBSCAN
 # Create pipeline
 pipeline = Pipeline([
     ('scaler', StandardScaler()),
-    ('clustering', FN_DBSCAN(eps=0.5, epsilon2=5))
+    ('clustering', FN_DBSCAN(eps=0.5, min_fuzzy_neighbors=5))
 ])
 
 # Fit pipeline
@@ -240,7 +242,7 @@ from fn_dbscan import FN_DBSCAN
 for fuzzy_func in ['linear', 'exponential', 'trapezoidal']:
     model = FN_DBSCAN(
         eps=0.5,
-        epsilon2=5,
+        min_fuzzy_neighbors=5,
         fuzzy_function=fuzzy_func
     )
     labels = model.fit_predict(X)

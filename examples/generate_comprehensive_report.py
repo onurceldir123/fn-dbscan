@@ -37,7 +37,7 @@ def run_experiment(X, y_true, eps_dbscan, min_pts_dbscan, eps_fn, min_pts_fn,
     labels_dbscan = dbscan.fit_predict(X_norm)
     
     # FN-DBSCAN
-    fndbscan = FN_DBSCAN(eps=eps_fn, epsilon2=min_pts_fn, 
+    fndbscan = FN_DBSCAN(eps=eps_fn, min_fuzzy_neighbors=min_pts_fn, 
                          fuzzy_function='exponential', k=20, normalize=False)
     labels_fndbscan = fndbscan.fit_predict(X_norm)
     

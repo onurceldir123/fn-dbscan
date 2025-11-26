@@ -25,11 +25,11 @@ class TestSklearnCompatibility:
 
     def test_get_params(self):
         """Test get_params method from BaseEstimator."""
-        model = FN_DBSCAN(eps=0.7, min_cardinality=4, fuzzy_function='exponential')
+        model = FN_DBSCAN(eps=0.7, min_fuzzy_neighbors=4, fuzzy_function='exponential')
         params = model.get_params()
 
         assert params['eps'] == 0.7
-        assert params['min_cardinality'] == 4
+        assert params['min_fuzzy_neighbors'] == 4
         assert params['fuzzy_function'] == 'exponential'
         assert 'metric' in params
 
@@ -37,10 +37,10 @@ class TestSklearnCompatibility:
         """Test set_params method from BaseEstimator."""
         model = FN_DBSCAN()
 
-        model.set_params(eps=1.5, min_cardinality=10)
+        model.set_params(eps=1.5, min_fuzzy_neighbors=10)
 
         assert model.eps == 1.5
-        assert model.min_cardinality == 10
+        assert model.min_fuzzy_neighbors == 10
 
     def test_set_params_returns_self(self):
         """Test that set_params returns self."""
@@ -52,11 +52,11 @@ class TestSklearnCompatibility:
         """Test compatibility with sklearn.clone."""
         from sklearn.base import clone
 
-        model1 = FN_DBSCAN(eps=0.7, min_cardinality=4)
+        model1 = FN_DBSCAN(eps=0.7, min_fuzzy_neighbors=4)
         model2 = clone(model1)
 
         assert model2.eps == model1.eps
-        assert model2.min_cardinality == model1.min_cardinality
+        assert model2.min_fuzzy_neighbors == model1.min_fuzzy_neighbors
         assert model2 is not model1
 
     def test_fit_method_signature(self):
@@ -191,7 +191,7 @@ class TestReproducibility:
         """Test that multiple fits give same result."""
         X, _ = make_blobs(n_samples=50, random_state=42)
 
-        model = FN_DBSCAN(eps=2.0, min_cardinality=3)
+        model = FN_DBSCAN(eps=2.0, min_fuzzy_neighbors=3)
 
         labels1 = model.fit_predict(X)
         labels2 = model.fit_predict(X)
@@ -202,10 +202,10 @@ class TestReproducibility:
         """Test that same parameters give same result."""
         X, _ = make_blobs(n_samples=50, random_state=42)
 
-        model1 = FN_DBSCAN(eps=2.0, min_cardinality=3, fuzzy_function='linear')
+        model1 = FN_DBSCAN(eps=2.0, min_fuzzy_neighbors=3, fuzzy_function='linear')
         labels1 = model1.fit_predict(X)
 
-        model2 = FN_DBSCAN(eps=2.0, min_cardinality=3, fuzzy_function='linear')
+        model2 = FN_DBSCAN(eps=2.0, min_fuzzy_neighbors=3, fuzzy_function='linear')
         labels2 = model2.fit_predict(X)
 
         np.testing.assert_array_equal(labels1, labels2)

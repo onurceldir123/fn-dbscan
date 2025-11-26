@@ -50,7 +50,7 @@ labels_dbscan = dbscan.fit_predict(X_norm)
 try:
     fndbscan = FNDBSCAN(
         eps=EPSILON_FNDBSCAN,   # Yarıçap
-        epsilon2=MIN_PTS_FNDBSCAN,  # Min kardinalite
+        min_fuzzy_neighbors=MIN_PTS_FNDBSCAN,  # Min kardinalite
         fuzzy_function='exponential',
         k=20,
         normalize=False         # Zaten normalize ettik

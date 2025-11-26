@@ -31,14 +31,14 @@ def main():
     # Create and fit FN-DBSCAN model
     model = FN_DBSCAN(
         eps=0.7,
-        min_cardinality=5,
+        min_fuzzy_neighbors=5,
         fuzzy_function='linear',
         metric='euclidean'
     )
 
     print(f"\nFitting FN-DBSCAN with parameters:")
     print(f"  eps: {model.eps}")
-    print(f"  min_cardinality: {model.min_cardinality}")
+    print(f"  min_fuzzy_neighbors: {model.min_fuzzy_neighbors}")
     print(f"  fuzzy_function: {model.fuzzy_function}")
 
     labels = model.fit_predict(X)

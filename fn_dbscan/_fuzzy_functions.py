@@ -75,6 +75,8 @@ def exponential_membership(distance: Union[float, np.ndarray], epsilon: float, k
     k : float, default=20.0
         Parameter controlling the steepness of the membership function.
         Paper recommends k=20 for best results.
+        However, dynamic calculation (k = d_max / eps) is used by default
+        for better adaptability across different datasets and eps values.
     d_max : float, default=1.0
         Maximum distance in the dataset.
 

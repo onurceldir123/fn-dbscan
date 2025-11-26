@@ -12,19 +12,19 @@ class TestFNDBSCANBasic:
 
     def test_initialization(self):
         """Test FN_DBSCAN initialization."""
-        model = FN_DBSCAN(eps=0.5, min_cardinality=3, fuzzy_function='linear')
+        model = FN_DBSCAN(eps=0.5, min_fuzzy_neighbors=3, fuzzy_function='linear')
         assert model.eps == 0.5
-        assert model.min_cardinality == 3
+        assert model.min_fuzzy_neighbors == 3
         assert model.fuzzy_function == 'linear'
         assert model.metric == 'euclidean'
 
     def test_repr(self):
         """Test string representation."""
-        model = FN_DBSCAN(eps=0.5, min_cardinality=3)
+        model = FN_DBSCAN(eps=0.5, min_fuzzy_neighbors=3)
         repr_str = repr(model)
         assert 'FN_DBSCAN' in repr_str
         assert 'eps=0.5' in repr_str
-        assert 'min_cardinality=3' in repr_str
+        assert 'min_fuzzy_neighbors=3' in repr_str
 
     def test_simple_clustering(self):
         """Test clustering on simple 2-cluster dataset."""
@@ -38,7 +38,7 @@ class TestFNDBSCANBasic:
             random_state=42
         )
 
-        model = FN_DBSCAN(eps=2.0, min_cardinality=3)
+        model = FN_DBSCAN(eps=2.0, min_fuzzy_neighbors=3)
         labels = model.fit_predict(X)
 
         # Should find 2 clusters
@@ -57,10 +57,10 @@ class TestFNDBSCANBasic:
         """Test that fit and fit_predict give same results."""
         X = np.array([[1, 2], [2, 2], [2, 3], [8, 7], [8, 8]])
 
-        model1 = FN_DBSCAN(eps=3, min_cardinality=2)
+        model1 = FN_DBSCAN(eps=3, min_fuzzy_neighbors=2)
         model1.fit(X)
 
-        model2 = FN_DBSCAN(eps=3, min_cardinality=2)
+        model2 = FN_DBSCAN(eps=3, min_fuzzy_neighbors=2)
         labels = model2.fit_predict(X)
 
         np.testing.assert_array_equal(model1.labels_, labels)
@@ -68,7 +68,7 @@ class TestFNDBSCANBasic:
     def test_attributes_after_fit(self):
         """Test that required attributes exist after fit."""
         X = np.array([[1, 2], [2, 2], [2, 3]])
-        model = FN_DBSCAN(eps=3, min_cardinality=2)
+        model = FN_DBSCAN(eps=3, min_fuzzy_neighbors=2)
         model.fit(X)
 
         assert hasattr(model, 'labels_')
@@ -92,7 +92,7 @@ class TestFNDBSCANFuzzyFunctions:
 
     def test_linear_function(self):
         """Test with linear fuzzy function."""
-        model = FN_DBSCAN(eps=3, min_cardinality=2, fuzzy_function='linear')
+        model = FN_DBSCAN(eps=3, min_fuzzy_neighbors=2, fuzzy_function='linear')
         model.fit(self.X)
 
         assert model.n_clusters_ >= 0
@@ -100,7 +100,7 @@ class TestFNDBSCANFuzzyFunctions:
 
     def test_exponential_function(self):
         """Test with exponential fuzzy function."""
-        model = FN_DBSCAN(eps=3, min_cardinality=2, fuzzy_function='exponential')
+        model = FN_DBSCAN(eps=3, min_fuzzy_neighbors=2, fuzzy_function='exponential')
         model.fit(self.X)
 
         assert model.n_clusters_ >= 0
@@ -108,7 +108,7 @@ class TestFNDBSCANFuzzyFunctions:
 
     def test_trapezoidal_function(self):
         """Test with trapezoidal fuzzy function."""
-        model = FN_DBSCAN(eps=3, min_cardinality=2, fuzzy_function='trapezoidal')
+        model = FN_DBSCAN(eps=3, min_fuzzy_neighbors=2, fuzzy_function='trapezoidal')
         model.fit(self.X)
 
         assert model.n_clusters_ >= 0
@@ -117,11 +117,11 @@ class TestFNDBSCANFuzzyFunctions:
     def test_different_functions_may_differ(self):
         """Test that different fuzzy functions can produce different results."""
         labels_linear = FN_DBSCAN(
-            eps=3, min_cardinality=2.5, fuzzy_function='linear'
+            eps=3, min_fuzzy_neighbors=2.5, fuzzy_function='linear'
         ).fit_predict(self.X)
 
         labels_exp = FN_DBSCAN(
-            eps=3, min_cardinality=2.5, fuzzy_function='exponential'
+            eps=3, min_fuzzy_neighbors=2.5, fuzzy_function='exponential'
         ).fit_predict(self.X)
 
         # Results may differ (but not necessarily)
@@ -143,7 +143,7 @@ class TestFNDBSCANEdgeCases:
     def test_single_point(self):
         """Test with single point."""
         X = np.array([[1, 2]])
-        model = FN_DBSCAN(eps=0.5, min_cardinality=3)
+        model = FN_DBSCAN(eps=0.5, min_fuzzy_neighbors=3)
         model.fit(X)
 
         # Single point cannot be core (cardinality = 1.0 < 3)
@@ -153,7 +153,7 @@ class TestFNDBSCANEdgeCases:
     def test_two_identical_points(self):
         """Test with two identical points."""
         X = np.array([[1, 2], [1, 2]])
-        model = FN_DBSCAN(eps=0.5, min_cardinality=2)
+        model = FN_DBSCAN(eps=0.5, min_fuzzy_neighbors=2)
         model.fit(X)
 
         # Both points have cardinality 2.0, should form cluster
@@ -164,7 +164,7 @@ class TestFNDBSCANEdgeCases:
     def test_all_noise(self):
         """Test when all points are noise."""
         X = np.array([[1, 2], [10, 20], [100, 200]])
-        model = FN_DBSCAN(eps=0.1, min_cardinality=5)
+        model = FN_DBSCAN(eps=0.1, min_fuzzy_neighbors=5)
         model.fit(X)
 
         assert model.n_clusters_ == 0
@@ -173,7 +173,7 @@ class TestFNDBSCANEdgeCases:
     def test_single_cluster(self):
         """Test when all points form one cluster."""
         X = np.array([[1, 2], [1.5, 2.5], [2, 2], [2.5, 2.5]])
-        model = FN_DBSCAN(eps=2.0, min_cardinality=2)
+        model = FN_DBSCAN(eps=2.0, min_fuzzy_neighbors=2)
         model.fit(X)
 
         # All points should be in same cluster
@@ -182,9 +182,9 @@ class TestFNDBSCANEdgeCases:
         assert model.labels_[0] == 0
 
     def test_min_cardinality_one(self):
-        """Test with min_cardinality=1 (everything is core)."""
+        """Test with min_fuzzy_neighbors=1 (everything is core)."""
         X = np.array([[1, 2], [10, 20], [100, 200]])
-        model = FN_DBSCAN(eps=1.0, min_cardinality=1.0)
+        model = FN_DBSCAN(eps=1.0, min_fuzzy_neighbors=1.0)
         model.fit(X)
 
         # Each point has at least cardinality 1.0 (itself)
@@ -199,7 +199,7 @@ class TestFNDBSCANNonConvex:
         """Test on sklearn's moons dataset."""
         X, y_true = make_moons(n_samples=100, noise=0.1, random_state=42)
 
-        model = FN_DBSCAN(eps=0.3, min_cardinality=2.5)
+        model = FN_DBSCAN(eps=0.3, min_fuzzy_neighbors=2.5)
         model.fit(X)
 
         # Should find approximately 2 clusters
@@ -209,10 +209,10 @@ class TestFNDBSCANNonConvex:
         """Test that algorithm is deterministic."""
         X, _ = make_blobs(n_samples=50, random_state=42)
 
-        model1 = FN_DBSCAN(eps=2.0, min_cardinality=3)
+        model1 = FN_DBSCAN(eps=2.0, min_fuzzy_neighbors=3)
         labels1 = model1.fit_predict(X)
 
-        model2 = FN_DBSCAN(eps=2.0, min_cardinality=3)
+        model2 = FN_DBSCAN(eps=2.0, min_fuzzy_neighbors=3)
         labels2 = model2.fit_predict(X)
 
         np.testing.assert_array_equal(labels1, labels2)
@@ -235,14 +235,14 @@ class TestFNDBSCANInputValidation:
             FN_DBSCAN(eps=np.inf).fit(X)
 
     def test_invalid_min_cardinality(self):
-        """Test with invalid min_cardinality values."""
+        """Test with invalid min_fuzzy_neighbors values."""
         X = np.array([[1, 2], [2, 3]])
 
         with pytest.raises((ValueError, TypeError)):
-            FN_DBSCAN(min_cardinality=0).fit(X)
+            FN_DBSCAN(min_fuzzy_neighbors=0).fit(X)
 
         with pytest.raises((ValueError, TypeError)):
-            FN_DBSCAN(min_cardinality=-1).fit(X)
+            FN_DBSCAN(min_fuzzy_neighbors=-1).fit(X)
 
     def test_invalid_fuzzy_function(self):
         """Test with invalid fuzzy function."""
@@ -289,7 +289,7 @@ class TestFNDBSCANCore:
             [10, 10]  # Isolated point
         ])
 
-        model = FN_DBSCAN(eps=2.0, min_cardinality=2)
+        model = FN_DBSCAN(eps=2.0, min_fuzzy_neighbors=2)
         model.fit(X)
 
         # First 3 points should be core
@@ -308,7 +308,7 @@ class TestFNDBSCANCore:
             [3, 0]  # Border point (not enough neighbors to be core)
         ])
 
-        model = FN_DBSCAN(eps=1.5, min_cardinality=1.6)
+        model = FN_DBSCAN(eps=1.5, min_fuzzy_neighbors=1.6)
         model.fit(X)
 
         # All points should be in same cluster (no noise)

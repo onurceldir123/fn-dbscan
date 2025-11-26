@@ -90,7 +90,7 @@ for eps in param_grid['eps']:
 print("\nOptimizing FN-DBSCAN parameters...")
 for eps in param_grid['eps']:
     for min_samples in param_grid['min_samples']:
-        fndbscan = FN_DBSCAN(eps=eps, epsilon2=min_samples, 
+        fndbscan = FN_DBSCAN(eps=eps, min_fuzzy_neighbors=min_samples, 
                              fuzzy_function='exponential', k=20, normalize=False)
         labels = fndbscan.fit_predict(X_pca_norm)
         
@@ -120,7 +120,7 @@ dbscan_best = DBSCAN(**best_params_dbscan)
 labels_dbscan = dbscan_best.fit_predict(X_pca_norm)
 
 fndbscan_best = FN_DBSCAN(eps=best_params_fndbscan['eps'], 
-                          epsilon2=best_params_fndbscan['min_samples'],
+                          min_fuzzy_neighbors=best_params_fndbscan['min_samples'],
                           fuzzy_function='exponential', k=20, normalize=False)
 labels_fndbscan = fndbscan_best.fit_predict(X_pca_norm)
 
@@ -230,7 +230,7 @@ DBSCAN:
 
 FN-DBSCAN:
   • eps = {best_params_fndbscan['eps']}
-  • epsilon2 (min_samples) = {best_params_fndbscan['min_samples']}
+  • min_fuzzy_neighbors (min_samples) = {best_params_fndbscan['min_samples']}
   • fuzzy_function = exponential
   • k = 20
   • ARI Score = {best_ari_fndbscan:.4f}

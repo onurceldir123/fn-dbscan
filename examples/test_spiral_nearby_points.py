@@ -39,9 +39,9 @@ dbscan_configs = [
 
 # FN-DBSCAN için de daha büyük epsilon ve daha düşük min_samples
 fndbscan_configs = [
-    {'eps': 0.15, 'epsilon2': 3, 'k': 15, 'name': 'FN-DBSCAN-1 (eps=0.15, k=15)'},
-    {'eps': 0.18, 'epsilon2': 3, 'k': 20, 'name': 'FN-DBSCAN-2 (eps=0.18, k=20)'},
-    {'eps': 0.2, 'epsilon2': 3, 'k': 25, 'name': 'FN-DBSCAN-3 (eps=0.2, k=25)'},
+    {'eps': 0.15, 'min_fuzzy_neighbors': 3, 'k': 15, 'name': 'FN-DBSCAN-1 (eps=0.15, k=15)'},
+    {'eps': 0.18, 'min_fuzzy_neighbors': 3, 'k': 20, 'name': 'FN-DBSCAN-2 (eps=0.18, k=20)'},
+    {'eps': 0.2, 'min_fuzzy_neighbors': 3, 'k': 25, 'name': 'FN-DBSCAN-3 (eps=0.2, k=25)'},
 ]
 
 # Test all configurations
@@ -118,7 +118,7 @@ print(f"  Clusters: {best_dbscan['n_clusters']}, Noise: {best_dbscan['n_noise']}
 print(f"  Silhouette: {best_dbscan['silhouette']:.4f}")
 
 print(f"\nBest FN-DBSCAN: {best_fndbscan['name']}")
-print(f"  Parameters: eps={best_fndbscan['params']['eps']}, epsilon2={best_fndbscan['params']['epsilon2']}, k={best_fndbscan['params']['k']}")
+print(f"  Parameters: eps={best_fndbscan['params']['eps']}, min_fuzzy_neighbors={best_fndbscan['params']['min_fuzzy_neighbors']}, k={best_fndbscan['params']['k']}")
 print(f"  Clusters: {best_fndbscan['n_clusters']}, Noise: {best_fndbscan['n_noise']} ({best_fndbscan['n_noise']/len(X)*100:.1f}%)")
 print(f"  Silhouette: {best_fndbscan['silhouette']:.4f}")
 
@@ -182,7 +182,7 @@ table_data.append(['Noise', f"{best_dbscan['n_noise']} ({best_dbscan['n_noise']/
 table_data.append(['Silhouette', f"{best_dbscan['silhouette']:.4f}", f"{best_fndbscan['silhouette']:.4f}"])
 table_data.append(['eps', f"{best_dbscan['params']['eps']}", f"{best_fndbscan['params']['eps']}"])
 table_data.append(['min_samples', f"{best_dbscan['params']['min_samples']}", 
-                   f"{best_fndbscan['params']['epsilon2']}"])
+                   f"{best_fndbscan['params']['min_fuzzy_neighbors']}"])
 
 table = ax_table.table(cellText=table_data, cellLoc='center', loc='center',
                        colWidths=[0.35, 0.325, 0.325])
