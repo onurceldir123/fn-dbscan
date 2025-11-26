@@ -99,10 +99,8 @@ The main class for Fuzzy Neighborhood DBSCAN clustering.
 
 - **`min_membership`** : *float, default=0.0* Minimum fuzzy membership threshold ($\epsilon_1$ or $\alpha$-cut level in the paper). Points with membership degree $\mu(d) <$ `min_membership` are not considered neighbors.
   *Range:* $[0, 1]$. Use `0.0` to include all points within the `eps` radius.
-  *Formerly called:* `epsilon1`
 
 - **`min_fuzzy_neighbors`** : *float, default=5.0* Minimum fuzzy cardinality for a point to be classified as a core point ($\epsilon_2$ in the paper). This is the fuzzy equivalent of standard DBSCAN's `min_samples`.
-  *Formerly called:* `epsilon2` or `min_cardinality`
 
 - **`fuzzy_function`** : *{'linear', 'exponential', 'trapezoidal'}, default='linear'* The fuzzy membership function $\mu(d)$ to use for calculating neighborhood density:
   

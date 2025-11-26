@@ -69,15 +69,6 @@ class FN_DBSCAN(BaseEstimator, ClusterMixin):
         Whether to normalize the data so that maximum distance is ≤ 1.
         This is recommended in the paper to make eps parameter scale-independent.
 
-    epsilon1 : float, optional (legacy)
-        Legacy parameter. Use min_membership instead. Kept for backward compatibility.
-
-    epsilon2 : float, optional (legacy)
-        Legacy parameter. Use min_fuzzy_neighbors instead. Kept for backward compatibility.
-
-    min_cardinality : float, optional (legacy)
-        Legacy parameter. Use min_fuzzy_neighbors instead. Kept for backward compatibility.
-
     Attributes
     ----------
     labels_ : ndarray of shape (n_samples,)
@@ -95,7 +86,7 @@ class FN_DBSCAN(BaseEstimator, ClusterMixin):
     >>> from fn_dbscan import FN_DBSCAN
     >>> import numpy as np
     >>> X = np.array([[1, 2], [2, 2], [2, 3], [8, 7], [8, 8], [25, 80]])
-    >>> clustering = FN_DBSCAN(eps=3, min_cardinality=2).fit(X)
+    >>> clustering = FN_DBSCAN(eps=3, min_fuzzy_neighbors=2).fit(X)
     >>> clustering.labels_
     array([0, 0, 0, 1, 1, -1])
     >>> clustering.n_clusters_
@@ -118,28 +109,12 @@ class FN_DBSCAN(BaseEstimator, ClusterMixin):
         self,
         eps: float = 0.5,
         min_membership: float = 0.0,
-        min_fuzzy_neighbors: Optional[float] = None,
+        min_fuzzy_neighbors: float = 5.0,
         fuzzy_function: str = 'linear',
         metric: str = 'euclidean',
         k: Optional[float] = None,
-        normalize: bool = True,
-        # Legacy parameters (kept for backward compatibility)
-        epsilon1: Optional[float] = None,
-        epsilon2: Optional[float] = None,
-        min_cardinality: Optional[float] = None
+        normalize: bool = True
     ):
-        # Handle backward compatibility for epsilon1
-        if epsilon1 is not None:
-            min_membership = epsilon1
-
-        # Handle backward compatibility for epsilon2 and min_cardinality
-        if epsilon2 is not None and min_fuzzy_neighbors is None:
-            min_fuzzy_neighbors = epsilon2
-        elif min_cardinality is not None and min_fuzzy_neighbors is None:
-            min_fuzzy_neighbors = min_cardinality
-        elif min_fuzzy_neighbors is None:
-            min_fuzzy_neighbors = 5.0  # Default value
-
         self.eps = eps
         self.min_membership = min_membership
         self.min_fuzzy_neighbors = min_fuzzy_neighbors
@@ -147,11 +122,6 @@ class FN_DBSCAN(BaseEstimator, ClusterMixin):
         self.metric = metric
         self.k = k
         self.normalize = normalize
-
-        # Keep old attributes for backward compatibility
-        self.epsilon1 = self.min_membership
-        self.epsilon2 = self.min_fuzzy_neighbors
-        self.min_cardinality = self.min_fuzzy_neighbors
 
     def fit(self, X, y=None):
         """Perform FN-DBSCAN clustering from features.
@@ -471,8 +441,8 @@ class FN_DBSCAN(BaseEstimator, ClusterMixin):
         """Return string representation of the estimator."""
         return (
             f"FN_DBSCAN(eps={self.eps}, "
-            f"epsilon1={self.epsilon1}, "
-            f"epsilon2={self.epsilon2}, "
+            f"min_membership={self.min_membership}, "
+            f"min_fuzzy_neighbors={self.min_fuzzy_neighbors}, "
             f"fuzzy_function='{self.fuzzy_function}', "
             f"k={self.k}, "
             f"normalize={self.normalize}, "
