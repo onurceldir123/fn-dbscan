@@ -5,15 +5,6 @@
 
 A scikit-learn compatible implementation of **Fuzzy Neighborhood DBSCAN (FN-DBSCAN)**, a density-based clustering algorithm that extends classic DBSCAN using fuzzy set theory.
 
-## Why FN-DBSCAN?
-
-Traditional DBSCAN treats all neighbors within epsilon radius equally. FN-DBSCAN uses fuzzy membership functions to weight neighbors by distance, providing:
-
-- **Better boundary detection** - Gradual membership instead of hard cutoffs
-- **Improved robustness** - More stable across parameter variations
-- **Flexible clustering** - Multiple fuzzy functions for different data types
-- **Scikit-learn compatible** - Drop-in replacement for DBSCAN
-
 ## Installation
 
 ```bash
@@ -27,23 +18,22 @@ pip install -e .
 ## Quick Start
 
 ```python
-import numpy as np
+from sklearn.datasets import make_moons
 from fn_dbscan import FN_DBSCAN
 
-# Your data
-X = np.array([[1, 2], [2, 2], [2, 3], [8, 7], [8, 8], [25, 80]])
+X, _ = make_moons(n_samples=200, noise=0.05, random_state=42)
 
-# Cluster with FN-DBSCAN
 model = FN_DBSCAN(
-    eps=0.3,
-    min_fuzzy_neighbors=2.0,
-    fuzzy_function='exponential',
-    normalize=True
+    eps=0.1,                  
+    min_fuzzy_neighbors=5.0,    
+    min_membership=0.0,        
+    fuzzy_function='exponential', 
+    normalize=True              
 )
+
 labels = model.fit_predict(X)
 
 print(f"Found {model.n_clusters_} clusters")
-# Found 2 clusters
 ```
 
 ## Parameters
@@ -66,48 +56,6 @@ print(f"Found {model.n_clusters_} clusters")
 - **`'linear'`** - Simple linear decay, good for well-separated clusters
 - **`'trapezoidal'`** - Maintains full membership for very close points
 
-## Usage Examples
-
-### With scikit-learn datasets
-
-```python
-from sklearn.datasets import make_moons
-from fn_dbscan import FN_DBSCAN
-
-# Non-convex clusters
-X, _ = make_moons(n_samples=200, noise=0.05, random_state=42)
-
-model = FN_DBSCAN(
-    eps=0.2,
-    min_fuzzy_neighbors=5,
-    fuzzy_function='exponential'
-)
-labels = model.fit_predict(X)
-```
-
-### In scikit-learn Pipeline
-
-```python
-from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import StandardScaler
-from fn_dbscan import FN_DBSCAN
-
-pipeline = Pipeline([
-    ('scaler', StandardScaler()),
-    ('clustering', FN_DBSCAN(eps=0.5, min_fuzzy_neighbors=5))
-])
-
-labels = pipeline.fit_predict(X)
-```
-
-### Comparing fuzzy functions
-
-```python
-for func in ['linear', 'exponential', 'trapezoidal']:
-    model = FN_DBSCAN(eps=0.5, min_fuzzy_neighbors=5, fuzzy_function=func)
-    labels = model.fit_predict(X)
-    print(f"{func}: {model.n_clusters_} clusters")
-```
 
 ## Model Attributes
 

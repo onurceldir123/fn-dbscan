@@ -20,7 +20,7 @@ def linear_membership(distance: Union[float, np.ndarray], epsilon: float, k: flo
     The linear membership function provides a simple linear decay from 1.0
     at distance 0 to 0.0 based on the k parameter.
 
-    Formula from paper (Equation 5): μ(d) = max(0, 1 - k·d/d_max)
+    Formula: μ(d) = max(0, 1 - k·d/d_max)
     where k = d_max / ε (automatically calculated from epsilon)
 
     Parameters
@@ -64,7 +64,7 @@ def exponential_membership(distance: Union[float, np.ndarray], epsilon: float, k
     The exponential membership function provides a smooth exponential decay
     from 1.0 at distance 0 towards 0.0 based on the k parameter.
 
-    Formula from paper (Equation 6): μ(d) = exp(-(k·d/d_max)²)
+    Formula: μ(d) = exp(-(k·d/d_max)²)
 
     Parameters
     ----------
@@ -74,7 +74,7 @@ def exponential_membership(distance: Union[float, np.ndarray], epsilon: float, k
         Maximum neighborhood radius (must be > 0).
     k : float, default=20.0
         Parameter controlling the steepness of the membership function.
-        Paper recommends k=20 for best results.
+        Recommending k=20 for best results.
         However, dynamic calculation (k = d_max / eps) is used by default
         for better adaptability across different datasets and eps values.
     d_max : float, default=1.0
@@ -110,7 +110,7 @@ def trapezoidal_membership(distance: Union[float, np.ndarray], epsilon: float, k
     membership (1.0) for distances up to ε/2, then linearly decays to 0.0
     at distance epsilon.
 
-    Formula (from paper):
+    Formula:
         μ(d) = 1.0,           if d ≤ ε/2
         μ(d) = 2(1 - d/ε),    if ε/2 < d ≤ ε
         μ(d) = 0.0,           if d > ε

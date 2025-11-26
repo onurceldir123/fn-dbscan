@@ -32,18 +32,18 @@ class FN_DBSCAN(BaseEstimator, ClusterMixin):
     ----------
     eps : float, default=0.5
         The maximum distance between two samples for one to be considered
-        as in the neighborhood of the other (ε in the paper).
+        as in the neighborhood of the other.
         For normalized data (normalize=True), this should be in [0, 1].
 
     min_membership : float, default=0.0
-        The minimum fuzzy membership threshold (α-cut level, ε₁ in the paper).
+        The minimum fuzzy membership threshold (α-cut level).
         Points with membership degree < min_membership are not considered neighbors.
         Should be in [0, 1]. Use 0.0 to include all points within eps radius.
         This parameter was formerly called 'epsilon1'.
 
     min_fuzzy_neighbors : float, default=5.0
         The minimum fuzzy cardinality required for a point to be classified
-        as a core point (ε₂ in the paper). This is the fuzzy equivalent of
+        as a core point. This is the fuzzy equivalent of
         DBSCAN's min_samples parameter.
         This parameter was formerly called 'epsilon2' or 'min_cardinality'.
 
@@ -63,11 +63,10 @@ class FN_DBSCAN(BaseEstimator, ClusterMixin):
         If None, it will be automatically calculated as k = d_max / eps for all
         fuzzy functions. This provides better adaptability across different datasets
         and eps values. Higher k values make the membership function steeper.
-        The paper suggests k=20 for exponential, but auto-calculation is recommended.
+        Suggesting k=20 for exponential.
 
     normalize : bool, default=True
         Whether to normalize the data so that maximum distance is ≤ 1.
-        This is recommended in the paper to make eps parameter scale-independent.
 
     Attributes
     ----------
@@ -148,7 +147,7 @@ class FN_DBSCAN(BaseEstimator, ClusterMixin):
         # Validate and convert input data
         X, n_samples, n_features = validate_data(X)
 
-        # Normalize data if requested (as per the paper, page 4)
+        # Normalize data if requested
         if self.normalize:
             X_normalized, self._d_max = self._normalize_data(X)
             self._X = X_normalized
@@ -276,8 +275,6 @@ class FN_DBSCAN(BaseEstimator, ClusterMixin):
         membership_func
     ) -> float:
         """Calculate fuzzy cardinality for a point.
-
-        As per Definition 9 in the paper (page 7):
         card FN(x; ε1, ε2) = Σ_{y∈N(x;ε1)} N_x(y)
 
         Parameters
@@ -378,7 +375,7 @@ class FN_DBSCAN(BaseEstimator, ClusterMixin):
                 seed_set.extend(q_neighbors)
 
     def _normalize_data(self, X: np.ndarray) -> tuple:
-        """Normalize data as described in the paper (page 4).
+        """Normalize data.
 
         Formula: x'_ik = (x_ik - x_min_k) / ((x_max_k - x_min_k) * sqrt(m))
 
@@ -422,9 +419,6 @@ class FN_DBSCAN(BaseEstimator, ClusterMixin):
         For all fuzzy functions, k is calculated as k = d_max / eps.
         This ensures that the membership function adapts to the scale of the data
         and the chosen neighborhood radius.
-
-        Note: The paper suggests k=20 for exponential, but we use a dynamic
-        calculation for better adaptability across different datasets and eps values.
 
         Returns
         -------

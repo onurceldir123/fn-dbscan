@@ -189,9 +189,9 @@ def validate_fit_params(eps: float, epsilon2: float,
     Parameters
     ----------
     eps : float
-        Epsilon (maximum neighborhood radius, ε in the paper).
+        Epsilon (maximum neighborhood radius).
     epsilon2 : float
-        Minimum fuzzy cardinality for core points (ε₂ in the paper).
+        Minimum fuzzy cardinality for core points.
     fuzzy_function : str
         Type of fuzzy membership function.
     metric : str
