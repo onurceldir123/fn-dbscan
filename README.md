@@ -137,7 +137,7 @@ If you use FN-DBSCAN in your research, please cite the original paper:
 ```bibtex
 @article{nasibov2009robustness,
   title={Robustness of density-based clustering methods with various neighborhood relations},
-  author={Nasibov, Efendi N and Ulutagay, Gokhan},
+  author={Nasibov, Efendi N and Ulutagay, G{\"o}zde},
   journal={Fuzzy Sets and Systems},
   volume={160},
   number={24},
