@@ -61,7 +61,7 @@ While classic DBSCAN is powerful, it relies on a "crisp" boundary—a point is e
 | `min_membership` | float | 0.0 | Minimum membership threshold ($\epsilon_1$). Points with membership below this are ignored. |
 | `fuzzy_function` | str | 'linear' | Membership function: `'linear'`, `'exponential'`, or `'trapezoidal'`. |
 | `normalize` | bool | True | Normalize data to make `eps` scale-independent (Strongly Recommended). |
-| `k` | float | None | **Steepness parameter.** Controls how fast membership drops. Higher $k$ = stricter neighborhood. Auto-calculated as $d_{max}/\epsilon$ if None. |
+| `k` | float | None | **Steepness parameter.** Controls how fast membership drops. Higher `k` implies a stricter neighborhood. Auto-calculated as `d_max / eps` if None. |
 | `metric` | str | 'euclidean' | Distance metric (any scikit-learn compatible metric). |
 
 ### Fuzzy Functions

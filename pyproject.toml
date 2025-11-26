@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "fn-dbscan"
-version = "0.1.2"
+version = "0.1.4"
 description = "Fuzzy Neighborhood DBSCAN clustering algorithm"
 readme = "README.md"
 authors = [
@@ -22,7 +22,21 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    # Kütüphanenizin ne tür bir yazılım olduğu
+    "Topic :: Software Development :: Libraries",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+
+    # Ana Bilimsel Kategoriler
+    "Topic :: Scientific/Engineering",
+    
+    # Yapay Zeka ve Makine Öğrenimi (Zaten var, kalsın)
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    
+    # Veri Madenciliği ve Analizi (DBSCAN için en kritik olanı bu)
+    "Topic :: Scientific/Engineering :: Information Analysis",
+    
+    # Matematiksel Algoritmalar (Bulanık mantık/Fuzzy logic kısmı için)
+    "Topic :: Scientific/Engineering :: Mathematics",
 ]
 keywords = ["clustering", "dbscan", "fuzzy", "machine-learning", "scikit-learn"]
 requires-python = ">=3.8,<4.0"
