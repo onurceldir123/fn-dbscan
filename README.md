@@ -108,7 +108,6 @@ If you use `fn-dbscan` in your research, please consider citing the original pap
   year={2009},
   publisher={Elsevier}
 }
-```
 
 **2. Software Implementation:**
 
