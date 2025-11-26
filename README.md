@@ -8,6 +8,11 @@ Implementation of **Fuzzy Neighborhood DBSCAN (FN-DBSCAN)**, a density-based clu
 ## Installation
 
 ```bash
+pip install fn-dbscan
+```
+
+For development:
+```bash
 git clone https://github.com/onurceldir123/fn-dbscan.git
 cd fn-dbscan
 pip install -e .
@@ -18,22 +23,23 @@ pip install -e .
 ## Quick Start
 
 ```python
-from sklearn.datasets import make_moons
+import numpy as np
 from fn_dbscan import FN_DBSCAN
 
-X, _ = make_moons(n_samples=200, noise=0.05, random_state=42)
+# Your data
+X = np.array([[1, 2], [2, 2], [2, 3], [8, 7], [8, 8], [25, 80]])
 
+# Cluster with FN-DBSCAN
 model = FN_DBSCAN(
-    eps=0.1,                  
-    min_fuzzy_neighbors=5.0,    
-    min_membership=0.0,        
-    fuzzy_function='exponential', 
-    normalize=True              
+    eps=0.3,
+    min_fuzzy_neighbors=2.0,
+    fuzzy_function='exponential',
+    normalize=True
 )
-
 labels = model.fit_predict(X)
 
 print(f"Found {model.n_clusters_} clusters")
+# Found 2 clusters
 ```
 
 ## Why FN-DBSCAN?
