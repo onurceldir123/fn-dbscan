@@ -45,9 +45,9 @@ def main():
     # Create and fit FN-DBSCAN model
     print(f"\nFitting FN-DBSCAN...")
     model = FN_DBSCAN(
-        eps=0.5,
+        eps=0.15,
         min_membership=0.0,
-        min_fuzzy_neighbors=3,
+        min_fuzzy_neighbors=5,
         fuzzy_function='exponential',
         normalize=True
     )
