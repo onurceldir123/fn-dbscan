@@ -33,7 +33,7 @@ class FN_DBSCAN(BaseEstimator, ClusterMixin):
     eps : float, default=0.1
         The maximum distance between two samples for one to be considered
         as in the neighborhood of the other.
-        For normalized data (normalize=True), this should be in [0, 1].
+        When normalize=True, this should be in [0, 1].
 
     min_membership : float, default=0.0
         The minimum fuzzy membership threshold (α-cut level).
@@ -65,7 +65,7 @@ class FN_DBSCAN(BaseEstimator, ClusterMixin):
         and eps values. Higher k values make the membership function steeper.
         Suggesting k=20 for exponential.
 
-    normalize : bool, default=True
+    normalize : bool, default=False
         Whether to normalize the data so that maximum distance is ≤ 1.
 
     Attributes
@@ -112,7 +112,7 @@ class FN_DBSCAN(BaseEstimator, ClusterMixin):
         fuzzy_function: str = 'linear',
         metric: str = 'euclidean',
         k: Optional[float] = None,
-        normalize: bool = True
+        normalize: bool = False
     ):
         self.eps = eps
         self.min_membership = min_membership

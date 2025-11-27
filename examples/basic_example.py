@@ -9,11 +9,11 @@ from fn_dbscan import FN_DBSCAN
 X, _ = make_moons(n_samples=200, noise=0.05, random_state=42)
 
 model = FN_DBSCAN(
-    eps=0.1,                  
-    min_fuzzy_neighbors=5.0,    
-    min_membership=0.0,        
-    fuzzy_function='exponential', 
-    normalize=True              
+    eps=0.1,
+    min_fuzzy_neighbors=5.0,
+    min_membership=0.0,
+    fuzzy_function='exponential',
+    normalize=False
 )
 
 labels = model.fit_predict(X)

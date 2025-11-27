@@ -30,11 +30,11 @@ from fn_dbscan import FN_DBSCAN
 X, _ = make_moons(n_samples=200, noise=0.05, random_state=42)
 
 model = FN_DBSCAN(
-    eps=0.1,                  
-    min_fuzzy_neighbors=5.0,    
-    min_membership=0.0,        
-    fuzzy_function='exponential', 
-    normalize=True              
+    eps=0.1,
+    min_fuzzy_neighbors=5.0,
+    min_membership=0.0,
+    fuzzy_function='exponential',
+    normalize=False
 )
 
 labels = model.fit_predict(X)
@@ -48,7 +48,7 @@ While classic DBSCAN is powerful, it relies on a "crisp" boundary—a point is e
 
 * **Robustness to Density Variations:** It is more robust than DBSCAN when handling datasets with varying densities and shapes.
 * **Soft Boundaries:** Instead of an all-or-nothing approach, it calculates a "fuzzy cardinality" (sum of membership degrees). This handles border points and noise more naturally.
-* **Scale Invariance:** The implementation includes the normalization technique proposed in the paper, making the `eps` parameter adaptable to the data scale.
+* **Scale Adaptability:** The implementation includes an optional normalization technique (set `normalize=True`) to make the `eps` parameter adaptable to the data scale.
 * **Best of Both Worlds:** Combines the speed of DBSCAN with the robustness of fuzzy clustering methods like NRFJP.
 
 ## Parameters
@@ -57,11 +57,11 @@ While classic DBSCAN is powerful, it relies on a "crisp" boundary—a point is e
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `eps` | float | 0.1 | Maximum neighborhood radius (0-1 for normalized data). |
+| `eps` | float | 0.1 | Maximum neighborhood radius (0-1 when normalize=True). |
 | `min_fuzzy_neighbors` | float | 5.0 | Minimum fuzzy cardinality to be a core point (analogous to `min_samples` in DBSCAN). |
 | `min_membership` | float | 0.0 | Minimum membership threshold ($\epsilon_1$). Points with membership below this are ignored. |
 | `fuzzy_function` | str | 'linear' | Membership function: `'linear'`, `'exponential'`, or `'trapezoidal'`. |
-| `normalize` | bool | True | Normalize data to make `eps` scale-independent (Strongly Recommended). |
+| `normalize` | bool | False | Normalize data to make `eps` scale-independent. |
 | `k` | float | None | **Steepness parameter.** Controls how fast membership drops. Higher `k` implies a stricter neighborhood. Auto-calculated as `d_max / eps` if None. |
 | `metric` | str | 'euclidean' | Distance metric (any scikit-learn compatible metric). |
 
