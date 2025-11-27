@@ -57,7 +57,7 @@ While classic DBSCAN is powerful, it relies on a "crisp" boundary—a point is e
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `eps` | float | 0.5 | Maximum neighborhood radius (0-1 for normalized data). |
+| `eps` | float | 0.1 | Maximum neighborhood radius (0-1 for normalized data). |
 | `min_fuzzy_neighbors` | float | 5.0 | Minimum fuzzy cardinality to be a core point (analogous to `min_samples` in DBSCAN). |
 | `min_membership` | float | 0.0 | Minimum membership threshold ($\epsilon_1$). Points with membership below this are ignored. |
 | `fuzzy_function` | str | 'linear' | Membership function: `'linear'`, `'exponential'`, or `'trapezoidal'`. |

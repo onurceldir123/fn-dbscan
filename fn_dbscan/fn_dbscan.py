@@ -30,7 +30,7 @@ class FN_DBSCAN(BaseEstimator, ClusterMixin):
 
     Parameters
     ----------
-    eps : float, default=0.5
+    eps : float, default=0.1
         The maximum distance between two samples for one to be considered
         as in the neighborhood of the other.
         For normalized data (normalize=True), this should be in [0, 1].
@@ -106,7 +106,7 @@ class FN_DBSCAN(BaseEstimator, ClusterMixin):
 
     def __init__(
         self,
-        eps: float = 0.5,
+        eps: float = 0.1,
         min_membership: float = 0.0,
         min_fuzzy_neighbors: float = 5.0,
         fuzzy_function: str = 'linear',
